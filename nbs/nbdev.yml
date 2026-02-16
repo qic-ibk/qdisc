@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "qdisc"
+  site-url: "https://PaulinDS.github.io/qdisc"
+  description: ""
+  repo-branch: main
+  repo-url: "https://github.com/PaulinDS/qdisc"

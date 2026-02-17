@@ -5,12 +5,18 @@ website:
       - 00_core.ipynb
       - section: lib_nbs
         contents:
+          - section: clustering
+            contents:
+              - lib_nbs/clustering/01_core.ipynb
           - section: dataset
             contents:
               - lib_nbs/dataset/01_core.ipynb
           - section: nn
             contents:
               - lib_nbs/nn/01_core.ipynb
+          - section: sr
+            contents:
+              - lib_nbs/sr/01_core.ipynb
           - section: vae
             contents:
               - lib_nbs/vae/01_core.ipynb

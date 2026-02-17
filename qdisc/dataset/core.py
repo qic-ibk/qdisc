@@ -5,14 +5,14 @@
 # %% auto #0
 __all__ = ['sqrt2', 'H', 'S_dag', 'ROTATIONS', 'sample_spin_configurations', 'get_classical_shadow', 'Dataset']
 
-# %% ../../nbs/lib_nbs/dataset/01_core.ipynb #ef4e2f5b
+# %% ../../nbs/lib_nbs/dataset/01_core.ipynb #886400c4
 import jax
 from jax import numpy as jnp
 from functools import partial
 from dataclasses import dataclass
 from typing import Sequence
 
-# %% ../../nbs/lib_nbs/dataset/01_core.ipynb #80c04e4a
+# %% ../../nbs/lib_nbs/dataset/01_core.ipynb #965592a9
 #@jax.jit
 def sample_spin_configurations(wave_function, num_samples, N, key):
     """
@@ -142,7 +142,7 @@ def get_classical_shadow(psi, num_shots, N, rng_key, bases = 'XYZ'):
 
 
 
-# %% ../../nbs/lib_nbs/dataset/01_core.ipynb #c5953483
+# %% ../../nbs/lib_nbs/dataset/01_core.ipynb #7b623695
 #from typing import Sequence
 #from dataclasses import dataclass
 #from flax import linen as nn

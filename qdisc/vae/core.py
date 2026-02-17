@@ -4,14 +4,15 @@
 
 # %% auto #0
 __all__ = ['matrix_log_density_gaussian', 'log_importance_weight_matrix', 'VAEmodel', 'categorical_reconstruction_loss',
-           'gaussian_negloglik', 'kl_standard_normal', 'log_normal_pdf', 'log_density_gaussian', 'TC_term']
+           'gaussian_negloglik', 'kl_standard_normal', 'log_normal_pdf', 'log_density_gaussian', 'TC_term',
+           'VAETrainer']
 
-# %% ../../nbs/lib_nbs/vae/01_core.ipynb #c0eb2bd0
+# %% ../../nbs/lib_nbs/vae/01_core.ipynb #4f9646d9
 import jax
 from jax import numpy as jnp
 from flax import linen as nn
 
-# %% ../../nbs/lib_nbs/vae/01_core.ipynb #1a1bdf9d
+# %% ../../nbs/lib_nbs/vae/01_core.ipynb #455af035
 #code inspired from the one found in https://github.com/YannDubs/disentangling-vae/tree/master
 
 def matrix_log_density_gaussian(x: jnp.ndarray, mu: jnp.ndarray, logvar: jnp.ndarray) -> jnp.ndarray:
@@ -56,15 +57,7 @@ def _get_log_pz_qz_prodzi_qzCx(latent_sample: jnp.ndarray, latent_dist: jnp.ndar
 
     return log_pz, log_qz, log_prod_qzi, log_q_zCx
 
-# %% ../../nbs/lib_nbs/vae/01_core.ipynb #61fb9852
-#from dataclasses import dataclass
-#from typing import Any, Callable, Optional, Tuple, Dict
-#import jax
-#import jax.numpy as jnp
-#import optax
-#from flax import linen as nn
-#from flax.training import train_state
-
+# %% ../../nbs/lib_nbs/vae/01_core.ipynb #3434a90a
 class VAEmodel(nn.Module):
     """
         VAE model, wrapper calling the encoder -> reparam -> decoder
@@ -163,4 +156,454 @@ def TC_term(mean: jnp.ndarray, logvar: jnp.ndarray, z: jnp.ndarray) -> jnp.ndarr
     tc_loss = (log_qz - log_prod_qzi).mean()
     #dw_kl_loss = (log_prod_qzi - log_pz).mean()
     return tc_loss
+
+
+# %% ../../nbs/lib_nbs/vae/01_core.ipynb #bf1658b1
+from typing import Any, Callable, Optional, Tuple, Dict
+import optax
+from ..dataset import Dataset
+from flax.training import train_state
+
+class VAETrainer:
+    """
+        Training wrapper for a the cpVAE for quantum
+        
+        Args:
+        
+            model: nn.Module (VAEmodel)
+            
+            dataset: Dataset
+            
+            optimizer: optax.GradientTransformation
+
+    """
+    def __init__(self,
+                 model: nn.Module,
+                 dataset: Dataset,
+                 optimizer: optax.GradientTransformation = optax.adabelief):
+        self.model = model
+        self.dataset = dataset
+        self.data_type = dataset.data_type
+        self.local_dimension = getattr(dataset, "local_dimension", None)
+        self.opt = optimizer(learning_rate=0.001)#optax.adabelief(learning_rate=0.001)
+        self.state: Optional[train_state.TrainState] = None
+        self.history_recon = []
+        self.history_logvar = []
+        self.history_loss = []
+        self.latvar = None
+        self.cmap = LinearSegmentedColormap.from_list("custom_cmap", ['#001733', '#13678A', '#60C7BB', '#FFFDA8'])
+
+    def init_state(self, key: jax.random.PRNGKey, sample_batch: jnp.ndarray) -> train_state.TrainState:
+        """Initialize model parameters and optimizer state (stored in self.state)"""
+
+        key, key_reparam = jax.random.split(key)
+        key, key_params = jax.random.split(key)
+        variables = self.model.init(key_params, sample_batch, key_reparam)
+        params = variables['params']
+        state = train_state.TrainState.create(
+            apply_fn=self.model.apply,
+            params=params,
+            tx=self.opt
+        )
+        self.state = state
+        self.history_logvar = []
+        self.history_recon = []
+        self.history_loss = []
+        self.latvar = None
+        return state
+
+    def _loss_and_metrics(self, params: Any, batch: jnp.ndarray, rng: jax.random.PRNGKey, beta: float = 1.0, gamma: float = 0, alpha: float = 0.0) -> Tuple[jnp.ndarray, Dict]:
+        """ compute loss, reconstruction loss and KL """
+        rng_drop, rng_reparam = jax.random.split(rng)
+        mean, logvar, z, log_cp_i = self.model.apply({'params': params}, batch, rng_reparam)
+
+        # reconstruction depends on the data_type
+        if self.data_type == "discrete":
+            recon_loss = categorical_reconstruction_loss(log_cp_i, batch)
+
+        elif self.data_type == "shadow":
+            recon_loss = categorical_reconstruction_loss(log_cp_i, batch[:, 1::2])
+
+        elif self.data_type == "hybrid":
+            log_p_f, d_out = log_cp_i
+            d_mean = d_out[...,0]
+            d_logvar = d_out[...,1]
+            N = log_p_f.shape[1]
+            f_targets = batch[:, :N].astype(jnp.int32)
+            d_targets = batch[:, N:]
+            recon_loss_f = categorical_reconstruction_loss(log_p_f, f_targets)
+            recon_loss_d = gaussian_negloglik(d_mean, d_logvar, d_targets)
+            recon_loss = alpha * recon_loss_f + (1.0 - alpha) * recon_loss_d
+        else:
+            raise ValueError(f"Unknown data_type {self.data_type}")
+
+        kl = kl_standard_normal(mean, logvar)
+        tc = TC_term(mean, logvar, z)
+        loss = recon_loss + beta * kl + gamma * tc
+        metrics = {'loss': loss, 'recon_loss': recon_loss, 'kl': kl}
+        return loss, metrics
+
+    def train(self, num_epochs: int, batch_size: int, key: jax.random.PRNGKey, learning_rate: float = 0.001, beta: float = 1.0, gamma: float = 0, alpha: float = 0.0, printing_rate: int = 1, re_shuffle: bool=True):
+        """
+            High-level training looop.
+            
+            Args:
+            
+                num_epochs: int
+                batch_size: int
+                key: jax.random.PRNGKey
+                learning_rate: float
+                beta: float KL weight
+                gamma: float TC weight
+                alpha: float weight for the two part of the hybrid loss
+                printing_rate: int how often to print info during training
+                re_shuffle: bool if we reshuffle the dataset to create batches at each epoch
+            
+            Returns:
+            
+                None
+
+        """
+        # Prepare batches and init state (at the end, reshuffle every epochs so its just for init)
+        key, key_batch_init = jax.random.split(key)
+        batches = list(self.dataset.create_batches(batch_size, key_batch_init))
+        self.opt.learning_rate = learning_rate
+
+
+        if self.state is None:
+            # init
+            init_batch = batches[0]
+            key, key_init = jax.random.split(key)
+            self.init_state(key_init, init_batch)
+
+
+        @jax.jit
+        def _train_step(state: train_state.TrainState, batch: jnp.ndarray, key: jax.random.PRNGKey, beta: float, gamma: float, alpha: float):
+            """Per-step function: computes grads, updates optimizer and returns new state + metrics. Inside to be pure and jitted"""
+            key, key_reparam = jax.random.split(key)
+
+            def loss_fn(params):
+                mean, logvar, z, log_cp_i = self.model.apply({'params': params}, batch, key_reparam)
+
+                if self.data_type == "discrete":
+                    recon_loss = categorical_reconstruction_loss(log_cp_i, batch)
+                elif self.data_type == "shadow":
+                    recon_loss = categorical_reconstruction_loss(log_cp_i, batch[:, 1::2])
+                elif self.data_type == "hybrid":
+                    log_p_f, d_out = log_cp_i
+                    d_mean = d_out[...,0]
+                    d_logvar = d_out[...,1]
+                    N = log_p_f.shape[1]
+                    f_targets = batch[:, :N].astype(jnp.int32)
+                    d_targets = batch[:, N:]
+                    recon_loss_f = categorical_reconstruction_loss(log_p_f, f_targets)
+                    recon_loss_d = gaussian_negloglik(d_mean, d_logvar, d_targets)
+                    recon_loss = alpha * recon_loss_f + (1.0 - alpha) * recon_loss_d
+                else:
+                    raise ValueError(f"Unknown data_type {self.data_type}")
+
+                kl = kl_standard_normal(mean, logvar)
+                tc = TC_term(mean, logvar, z)
+                loss = recon_loss + beta * kl + gamma * tc
+                return loss, (recon_loss, kl)
+
+            (loss_val, (recon_loss, kl)), grads = jax.value_and_grad(loss_fn, has_aux=True)(state.params)
+            # use TrainState.apply_gradients which handles opt updates
+            new_state = state.apply_gradients(grads=grads)
+            metrics = {'loss': loss_val, 'recon_loss': recon_loss, 'kl': kl}
+            return new_state, metrics
+
+        # Training loop
+        print("Start training...")
+        for i in range(num_epochs):
+            # shuffle / new batches per epoch
+            if re_shuffle == True:
+                key, epoch_key = jax.random.split(key)
+                batches = list(self.dataset.create_batches(batch_size, epoch_key))
+            for j, batch in enumerate(batches):
+                key, step_key = jax.random.split(key)
+                self.state, metrics = _train_step(self.state, batch, step_key, beta, gamma, alpha)
+
+                if j%10 == 0:
+                    mean, logvar, z, cp = self.model.apply({'params': self.state.params}, batch, key)
+                    self.history_recon.append(float(metrics['recon_loss']))
+                    self.history_logvar.append(jnp.mean(logvar, axis=0))
+                    self.history_loss.append(float(metrics['loss']))
+
+                if (i % printing_rate) == 0 and j == 0:
+                    print(f"epoch={i} step={j} loss={float(metrics['loss'])} recon={float(metrics['recon_loss'])}")# kl={float(metrics['kl'])}")
+                    print(f"logvar={jnp.mean(logvar, axis=0)}")
+
+
+        print("Training finished.")
+
+
+
+
+
+    def compute_repr2d(self, theta_pair: tuple = (1,0), values_other_thetas: tuple = (), return_latvar: bool = False):
+        """ compute mu, abs(mu), logvar accross the parameter space (2d)"""
+
+
+        thetas = self.dataset.thetas
+        theta1 = thetas[theta_pair[0]]
+        theta2 = thetas[theta_pair[1]]
+        latent_dim = self.model.encoder.latent_dim
+        shapes = (len(theta1), len(theta2), latent_dim)
+
+        #containers
+        all_mean = jnp.zeros(shapes)
+        all_mean_abs = jnp.zeros(shapes)
+        all_logvar = jnp.zeros(shapes)
+
+        #if more then 2 thetas, need to specify the values of the others
+        if len(thetas) != len(values_other_thetas)+2:
+            raise ValueError(f"For more then 2 thetas, here {len(thetas)}, need to specify the values of the other {len(thetas)-2} and {len(values_other_thetas)} were specified...")
+
+        key = jax.random.PRNGKey(0)#not used
+
+        for i, _ in enumerate(theta1):
+            for j, _ in enumerate(theta2):
+
+                #d = dataset.data[i,j,*values_other_thetas] #wrong ordering
+                location = [] #in parameter space (theta-space)
+                c = 0
+                for k in range(len(thetas)):
+                  if k not in theta_pair:
+                    location.append(values_other_thetas[k-c])#
+                  elif k == theta_pair[0]:
+                    location.append(i)
+                    c += 1
+                  elif k == theta_pair[1]:
+                    location.append(j)
+                    c += 1
+                d = dataset.data[tuple(location)]
+
+                mean, logvar, z, cp = myvaetrainer.model.apply({'params': myvaetrainer.state.params}, d, key)
+
+                all_mean = all_mean.at[i,j].set(jnp.mean(mean,axis=0))
+                all_mean_abs = all_mean_abs.at[i,j].set(jnp.mean(jnp.abs(mean),axis=0))
+                all_logvar = all_logvar.at[i,j].set(jnp.mean(logvar,axis=0))
+
+
+        id_latent = jnp.argsort(jnp.mean(all_logvar, axis=(0,1)))
+
+        latvar = {}
+        latvar['id_lat'] = id_latent
+        latvar['theta_pair'] = theta_pair
+
+
+        for i in range(latent_dim):
+            latvar['mu{}'.format(i)] = all_mean[...,id_latent[i]]
+            latvar['mu{}_abs'.format(i)] = all_mean_abs[...,id_latent[i]]
+            latvar['logvar{}'.format(i)] = all_logvar[...,id_latent[i]]
+
+        self.latvar = latvar
+
+        if return_latvar:
+          return latvar
+
+
+
+    def plot_repr2d(self, latvar: Optional[dict] = None, theta_pair: tuple = (1,0)):
+        """ plot mu, abs(mu), logvar accross the parameter space (2d)"""
+
+        if latvar is None:
+            latvar = self.latvar
+
+        latent_dim = self.model.encoder.latent_dim
+        cmap_blue = self.cmap
+
+        #if fig_shape is None:
+        thetas = self.dataset.thetas
+        theta1 = thetas[theta_pair[0]]
+        theta2 = thetas[theta_pair[1]]
+        fig_shape = (5,5)
+
+        for i in range(latent_dim):
+
+            plt.rcParams['font.size'] = 16
+            plt.figure(figsize=fig_shape,dpi=100)
+
+            plt.imshow(jnp.flipud(latvar['mu{}'.format(i)]),cmap=cmap_blue, aspect='auto')
+
+            cbar = plt.colorbar(orientation="horizontal", pad=0.03, location="top")
+            cbar.set_label(r'$\mu_{}$'.format(i+1), fontsize=20, labelpad=10)
+
+            plt.ylabel(r'$\theta_{}$'.format(theta_pair[0]))
+            plt.xlabel(r'$\theta_{}$'.format(theta_pair[1]))
+            plt.yticks([i for i in range(0,len(theta1),len(theta1)//4)], [str(theta1[len(theta1)-i])[:4] for i in range(0,len(theta1),len(theta1)//4)])
+            plt.xticks([i for i in range(0,len(theta2),len(theta2)//4)], [str(theta2[i])[:4] for i in range(0,len(theta2),len(theta2)//4)])
+            plt.show()
+
+
+            plt.rcParams['font.size'] = 16
+            plt.figure(figsize=fig_shape,dpi=100)
+
+            plt.imshow(jnp.flipud(latvar['mu{}_abs'.format(i)]),cmap=cmap_blue, aspect='auto')
+
+            cbar = plt.colorbar(orientation="horizontal", pad=0.03, location="top")
+            cbar.set_label(r'$|\mu_{}|$'.format(i+1), fontsize=20, labelpad=10)
+
+            plt.ylabel(r'$\theta_{}$'.format(theta_pair[0]))
+            plt.xlabel(r'$\theta_{}$'.format(theta_pair[1]))
+            plt.yticks([i for i in range(0,len(theta1),len(theta1)//4)], [str(theta1[len(theta1)-i])[:4] for i in range(0,len(theta1),len(theta1)//4)])
+            plt.xticks([i for i in range(0,len(theta2),len(theta2)//4)], [str(theta2[i])[:4] for i in range(0,len(theta2),len(theta2)//4)])
+            plt.show()
+
+
+            plt.rcParams['font.size'] = 16
+            plt.figure(figsize=fig_shape,dpi=100)
+
+            plt.imshow(jnp.flipud(latvar['logvar{}'.format(i)]),cmap=cmap_blue, aspect='auto')
+
+            cbar = plt.colorbar(orientation="horizontal", pad=0.03, location="top")
+            cbar.set_label(r'$\log\sigma_{}$'.format(i+1), fontsize=20, labelpad=10)
+
+            plt.ylabel(r'$\theta_{}$'.format(theta_pair[0]))
+            plt.xlabel(r'$\theta_{}$'.format(theta_pair[1]))
+            plt.yticks([i for i in range(0,len(theta1),len(theta1)//4)], [str(theta1[len(theta1)-i])[:4] for i in range(0,len(theta1),len(theta1)//4)])
+            plt.xticks([i for i in range(0,len(theta2),len(theta2)//4)], [str(theta2[i])[:4] for i in range(0,len(theta2),len(theta2)//4)])
+            plt.show()
+
+
+
+    def compute_and_plot_repr2d(self, theta_pair: tuple = (1,0), values_other_thetas: tuple = ()):#, fig_shape: Optional[tuple] = None):
+        """ compute and plot mu, abs(mu), logvar accross the parameter space (2d)"""
+        self.compute_repr2d(theta_pair=theta_pair)
+        self.plot_repr2d(theta_pair=theta_pair)
+
+
+    def plot_training(self, num_epochs: int):
+        """ plot the evolution of the reconstruction loss and the logvar during the training """
+
+        cmap_blue = self.cmap
+
+        history_logvar = jnp.array(self.history_logvar)
+        plt.rcParams['font.size'] = 16
+        plt.figure(figsize=(5,4),dpi=100)
+
+        epochs = jnp.linspace(0,num_epochs,len(history_logvar))
+        colors = [cmap_blue(0.1),cmap_blue(0.2),cmap_blue(0.3),cmap_blue(0.5),cmap_blue(0.4)]
+        color = cmap_blue(0.3)
+        if self.data_type != "hybrid":
+          plt.semilogy(epochs,self.history_recon,color=color)
+        else:
+          plt.plot(epochs,self.history_recon,color=color)
+        plt.xlabel('epochs')
+        plt.ylabel(r'$\mathcal{L}_{reconstr.}$')
+
+        plt.show()
+
+
+        plt.rcParams['font.size'] = 16
+        plt.figure(figsize=(5,4),dpi=100)
+
+        history_logvar = jnp.array(history_logvar)
+
+        for j in range(5):
+            plt.plot(epochs,[history_logvar[i,j] for i in range(len(history_logvar))], color=colors[j], label=r'$\sigma_{}$'.format(j+1))
+        plt.legend(bbox_to_anchor=(0.7, 0.85), loc='upper left', borderaxespad=0.)
+
+        plt.xlabel('epochs')
+        plt.ylabel(r'$\log(\sigma)$')
+
+        plt.show()
+
+
+    def get_data(self) -> dict:
+        """ get the data for saving"""
+        data = {'params': self.state.params, 'history_loss': self.history_loss,
+                'history_recon': self.history_recon, 'history_logvar': self.history_logvar, 'latvar': self.latvar}
+        return data
+
+
+
+
+
+    def get_sample(self, latent_var: jnp.ndarray, key: jax.random.PRNGKey, shadows: Optional[jnp.ndarray]=None) -> jnp.ndarray:
+      """Generate sample from the decoder of the cpVAE given the values of the latent variables z"""
+
+      size_batch = jnp.shape(latent_var)[0]
+      latent_dim = jnp.shape(latent_var)[1]
+      N = self.dataset.data.shape[-1]
+      decoder = self.model.decoder
+      params_decoder = {'params': self.state.params['decoder']}
+      local_states = self.dataset.local_states.astype(jnp.int32)#
+
+      if self.data_type == "hybrid":
+        raise ValueError("Not implemented for hybrid data (yet)")
+
+      def scan_fn(carry, i):
+        input, key = carry
+        p = jnp.exp(decoder.apply(params_decoder, input)[:, i, :])
+        #local_states = jnp.array([-1, 1])
+        key, subkey = jax.random.split(key)
+        spin_value_sampled = nkjax.batch_choice(subkey, local_states, p)
+        z, samples = input
+        samples = samples.at[:, i].set(spin_value_sampled)
+        input = (z, samples)
+        return (input, key), None
+
+      def scan_fn_shadows(carry, i):
+        input, key = carry
+        j = (i-1)//2
+        p = jnp.exp(decoder.apply(params_decoder, input)[:, j, :])
+        #local_states = jnp.array([-1, 1])
+        key, subkey = jax.random.split(key)
+        spin_value_sampled = nkjax.batch_choice(subkey, local_states, p)
+        z, samples = input
+        samples = samples.at[:, i].set(spin_value_sampled)
+        input = (z, samples)
+        return (input, key), None
+
+      # Initialize the carry with an empty array for samples and the key
+      initial_samples = jnp.zeros((size_batch, N)).astype(jnp.int32)
+      scan_fn = scan_fn_shadows if self.data_type == "shadow" else scan_fn
+      scan_values = jnp.arange(N)
+
+      if self.data_type == "shadow":
+        initial_samples = initial_samples.at[:, ::2].set(shadows[:,::2])
+        scan_values = jnp.arange(1,2*N,2)
+
+      initial_input = (latent_var, initial_samples)
+      carry = (initial_input, key)
+
+      # Perform the scan
+      carry, _ = jax.lax.scan(scan_fn, carry, scan_values)
+
+      # Extract the samples
+      samples = carry[0][1]
+
+      return samples
+
+
+
+
+    def reconstruct_sample(self, input_samples: jnp.ndarray, key: jax.random.PRNGKey) -> jnp.ndarray:
+      """ reconstruct input samples: get z from the encoder + sample from the encoder given z """
+
+      _, _, z, _ = self.model.apply({'params': self.state.params}, input_samples, key)
+      if self.data_type == "shadow":
+          samples_reconstructed = self.get_sample(z, key, input_samples)
+
+      else:
+        samples_reconstructed = self.get_sample(z, key)
+
+      return samples_reconstructed
+
+
+
+
+
+    def get_cp(self, input_samples: jnp.ndarray) -> jnp.ndarray:
+      """ get the cp of the input samples """
+
+      key = jax.random.PRNGKey(0) #not used
+      _, _, _, cp = self.model.apply({'params': self.state.params}, input_samples, key)
+
+      return cp
+
+
+
 

@@ -8,7 +8,7 @@ __all__ = ['EPS', 'pearson_between_vectors_vmap', 'spearman_rho_vmap', 'FFNN_the
            'curved_edge', 'empirical_corr_matrix', 'flatten_upper', 'pearson_between_vectors', 'cosine_sim',
            'spearman_rho', 'compare_theta_corr', 'auc_from_scores_labels']
 
-# %% ../../nbs/lib_nbs/sr/01_core.ipynb #bdee5a12
+# %% ../../nbs/lib_nbs/sr/01_core.ipynb #85744adf
 import jax
 from jax import numpy as jnp
 from scipy.optimize import minimize
@@ -19,7 +19,7 @@ import numpy as np
 from typing import Any, Callable, Optional, Tuple, Dict, Sequence
 from flax import linen as nn
 
-# %% ../../nbs/lib_nbs/sr/01_core.ipynb #a18716e1
+# %% ../../nbs/lib_nbs/sr/01_core.ipynb #ce005578
 class FFNN_theta_to_mu(nn.Module):
     """simple feed forward net from theta to mu1"""
     hidden_dim: int

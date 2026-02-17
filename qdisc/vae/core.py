@@ -7,12 +7,12 @@ __all__ = ['matrix_log_density_gaussian', 'log_importance_weight_matrix', 'VAEmo
            'gaussian_negloglik', 'kl_standard_normal', 'log_normal_pdf', 'log_density_gaussian', 'TC_term',
            'VAETrainer']
 
-# %% ../../nbs/lib_nbs/vae/01_core.ipynb #4f9646d9
+# %% ../../nbs/lib_nbs/vae/01_core.ipynb #ba981e8f
 import jax
 from jax import numpy as jnp
 from flax import linen as nn
 
-# %% ../../nbs/lib_nbs/vae/01_core.ipynb #455af035
+# %% ../../nbs/lib_nbs/vae/01_core.ipynb #fbfc99cd
 #code inspired from the one found in https://github.com/YannDubs/disentangling-vae/tree/master
 
 def matrix_log_density_gaussian(x: jnp.ndarray, mu: jnp.ndarray, logvar: jnp.ndarray) -> jnp.ndarray:
@@ -57,7 +57,7 @@ def _get_log_pz_qz_prodzi_qzCx(latent_sample: jnp.ndarray, latent_dist: jnp.ndar
 
     return log_pz, log_qz, log_prod_qzi, log_q_zCx
 
-# %% ../../nbs/lib_nbs/vae/01_core.ipynb #3434a90a
+# %% ../../nbs/lib_nbs/vae/01_core.ipynb #be76d07f
 class VAEmodel(nn.Module):
     """
         VAE model, wrapper calling the encoder -> reparam -> decoder
@@ -158,7 +158,7 @@ def TC_term(mean: jnp.ndarray, logvar: jnp.ndarray, z: jnp.ndarray) -> jnp.ndarr
     return tc_loss
 
 
-# %% ../../nbs/lib_nbs/vae/01_core.ipynb #bf1658b1
+# %% ../../nbs/lib_nbs/vae/01_core.ipynb #7811eb70
 from typing import Any, Callable, Optional, Tuple, Dict
 import optax
 from ..dataset import Dataset

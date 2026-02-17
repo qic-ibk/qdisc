@@ -10,8 +10,8 @@
 
 <h3 align="center">
 
-<em>Interpretable Machine Learning • Scientific Discovery • Quantum
-Physics</em>
+<em>Interpretable Machine Learning • Quantum Physics • Scientific
+Discovery</em>
 </h3>
 
 <p align="center">
@@ -29,7 +29,7 @@ started</a> \|
 <a href="https://qic-ibk.github.io/projective_simulation/tutorials/index_tutorials.html">Tutorials</a>
 </p>
 
-**QDisc** is a library for discovering and interpreting quantum phases
+**qdisc** is a library for discovering and interpreting quantum phases
 directly from raw quantum data, such as measurements obtained in quantum
 experiments. It focuses on interpretable machine learning methods that
 uncover emergent structure without requiring labeled data or prior
@@ -84,24 +84,6 @@ cluster Ising model - Hybrid data from a fermionic system
 
 These examples reproduce the results presented in the accompanying paper
 (TODO: add reference).
-
-## Developer Guide
-
-If you are new to using `nbdev` here are some useful pointers to get you
-started.
-
-### Install qdisc in Development mode
-
-``` sh
-# make sure qdisc package is installed in development mode
-$ pip install -e .
-
-# make changes under nbs/ directory
-# ...
-
-# compile to have changes apply to qdisc
-$ nbdev_prepare
-```
 
 ## Usage
 

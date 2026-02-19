@@ -6,20 +6,23 @@
 __all__ = ['EPS', 'pearson_between_vectors_vmap', 'spearman_rho_vmap', 'FFNN_theta_to_mu', 'TwoBodyModel', 'class_loss',
            'loss_SR1', 'derivative_loss_alpha_multi', 'loss_SR2', 'derivative_loss_alpha_multi_vk', 'loss_SR3',
            'curved_edge', 'empirical_corr_matrix', 'flatten_upper', 'pearson_between_vectors', 'cosine_sim',
-           'spearman_rho', 'compare_theta_corr', 'auc_from_scores_labels']
+           'spearman_rho', 'compare_theta_corr', 'auc_from_scores_labels', 'SymbolicRegression']
 
-# %% ../../nbs/lib_nbs/sr/01_core.ipynb #85744adf
+# %% ../../nbs/lib_nbs/sr/01_core.ipynb #a2b49d23
 import jax
 from jax import numpy as jnp
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 from matplotlib.path import Path
 import matplotlib.patches as patches
+from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 from typing import Any, Callable, Optional, Tuple, Dict, Sequence
 from flax import linen as nn
+import optax
+from ..dataset import Dataset
 
-# %% ../../nbs/lib_nbs/sr/01_core.ipynb #ce005578
+# %% ../../nbs/lib_nbs/sr/01_core.ipynb #5bcf091c
 class FFNN_theta_to_mu(nn.Module):
     """simple feed forward net from theta to mu1"""
     hidden_dim: int
@@ -255,5 +258,787 @@ def auc_from_scores_labels(scores, labels):
     sum_ranks_pos = jnp.sum(ranks * pos)
     auc = (sum_ranks_pos - n_pos*(n_pos+1)/2.0) / (n_pos * n_neg + 1e-12)
     return auc
+
+
+
+# %% ../../nbs/lib_nbs/sr/01_core.ipynb #3714dc72
+class SymbolicRegression:
+    def __init__(self,
+                 dataset: Dataset,
+                 cluster_idx_in: jnp.ndarray,
+                 objective: str,
+                 type_of_vk: Optional[str]=None,
+                 cluster_idx_out: Optional[jnp.ndarray]=None, #only needed for SR1 if not specified, full/in
+                 search_space: str="2_body_correlator", #ansatz or genetic
+                 add_constant: bool=False,
+                 shift_data: bool=True,
+                 VAE_model: Optional[nn.Module]=None, #needed for SR2,3
+                 VAE_params: Optional[Any]=None,#needed for SR2,3
+                 mu_cluster: Optional[jnp.ndarray]=None,#needed for SR2,3
+                 idx_mu_cluster: Optional[int]=None): #needed for SR2,3
+
+        """
+        Wrapper with the SR methods to be used on top of the representation learned by the cpVAE for quantum
+
+        Args:
+        
+            dataset: Dataset object
+            cluster_idx_in: coord. specifying the location of the cluster we analyse in parameter (theta) space
+            objective: SR1, SR2 or SR3
+            cluster_idx_out: coord. specifying the location of the cluster we analyse in parameter (theta) space (only used in SR1)
+            search_space: 2_body_correlator or genetic
+            add_constant: if True, add a constant term to the model
+            shift_data: if the symbolic function takes direcly the dataset.data or if {0,1}->{-1,1} before
+         
+         for SR2,3 also need:
+         
+            VAE_model: the VAE model
+            VAE_params: its params
+            mu_cluster: the value of the latent variable accrooss theta space where the cluster appear (for now, only one mu)
+            idx_mu_cluster: index of the latent variable where the cluster appear (for now, only one)
+        """
+
+
+
+
+        self.dataset = dataset
+        self.shift_data = shift_data
+        self.add_constant = add_constant
+        self.data_type = dataset.data_type
+        self.local_dimension = getattr(dataset, "local_dimension", None)
+        self.cmap = LinearSegmentedColormap.from_list("custom_cmap", ['#001733', '#13678A', '#60C7BB', '#FFFDA8'])
+
+        self.cluster_idx_in = cluster_idx_in
+        if cluster_idx_out is None: #then everything outside
+              parameter_space_shape = [len(dataset.thetas[i]) for i in range(len(dataset.thetas))]
+              grid = jnp.indices(parameter_space_shape)      # (k, ...)
+              grid = grid.reshape(len(parameter_space_shape), -1).T  # (N, k)
+              #Check which grid points are in the cluster
+              equal = jnp.all(grid[:, None, :] == cluster_idx_in[None, :, :], axis=-1)
+              #A grid point is in cluster if it matches ANY cluster point
+              in_cluster = jnp.any(equal, axis=1)
+              # Keep only points NOT in cluster
+              self.cluster_idx_out = grid[~in_cluster]
+        else:
+              self.cluster_idx_out = cluster_idx_out
+
+        available_objectives = ["SR1", "SR2", "SR3"]
+        if objective not in available_objectives:
+            raise ValueError(f"Objective must be one of {available_objectives}, got {objective}")
+        self.objective = objective
+
+        available_types_of_vk = ["cp", "delta"]
+        if objective == "SR3":
+          if type_of_vk not in available_types_of_vk:
+            raise ValueError(f"if the objective is SR3, the projector vk must be defined and one of {available_types_of_vk}, got {type_of_vk}")
+          self.type_of_vk = type_of_vk
+
+        available_search_spaces = ["2_body_correlator", "genetic"]
+        if search_space not in available_search_spaces:
+            raise ValueError(f"Search space must be one of {available_search_spaces}, got {search_space}")
+        if search_space == "genetic" and objective != "SR1":
+            raise ValueError(f"Genetic search space is only available for SR1 for the moment")
+        if search_space == "genetic":
+            try:
+                from pysr import PySRRegressor
+            except ImportError as e:
+                raise ValueError(
+                    "pysr package not found, need to install it"
+                ) from e
+            else:
+                print("PySRRegressor imported")
+
+        self.search_space = search_space
+
+
+        if (objective == "SR2" or objective == "SR3") and (VAE_model is None or VAE_params is None):
+            raise ValueError("VAE_model and VAE_params must be provided for SR2 and SR3")
+
+        self.VAE_model = VAE_model
+        self.VAE_params = VAE_params
+
+        if (objective == "SR2" or objective == "SR3") and (	mu_cluster is None or idx_mu_cluster is None):
+            raise ValueError("mu_cluster and idx_mu_cluster must be provided for SR2 and SR3")
+        self.mu_cluster = mu_cluster
+        self.idx_mu_cluster = idx_mu_cluster
+
+        self.params_small_MLP = None
+        self.theta_to_mu_net = None
+
+        N = dataset.data.shape[-1]
+        self.pairs = pairs = [('x{}'.format(i),'x{}'.format(j)) for i in range(N) for j in range(i+1,N)]
+
+        self.model = None
+        self.dataset_SR = None
+
+
+
+
+
+    ### train functions ###
+
+
+    def train(self, key: int, dataset_size: int=2000, **kwargs):
+      """ redirect to the train wrt the chosen search space """
+      if self.search_space == "2_body_correlator":
+        return self.train_2BC(key, dataset_size, **kwargs)
+
+      elif self.search_space == "genetic":
+        return self.call_pysr(key, dataset_size, **kwargs)
+
+      else:
+        raise ValueError(f"Search space {self.search_space} not supported")
+
+
+    ## genetic ##
+
+    def call_pysr(self,
+                  key: jax.random.PRNGKey,
+                  dataset_size: int,
+                  random_state: int = 2575,     # seed for reproductibility
+                  niterations: int = 200,       # Number of iterations to search
+                  binary_operators: list = ["+", "*", "-"],  # Allowed binary operations
+                  elementwise_loss: str = "loss(x,y) = -y*log(1/(1+exp(-x)))-(1-y)*log(1-1/(1+exp(-x)))",  # sigmoid loss for SR1
+                  maxsize: int = 20,            # max complexity of the equations
+                  progress: bool = True,         # Show progress during training
+                  extra_sympy_mappings: dict = {"C": "C"}, # Allow PySR to use constants
+                  batching: bool = True, #batching, usually big dataset
+                  batch_size: int = 500,
+                  turbo: bool = True,
+                  deterministic: bool = True, #for reproductibility
+                  parallelism: str = 'serial'):
+        """ call pysr with the SR objective """
+
+        X, Y = self.prepare_dataset_SR1(key, dataset_size)
+        Y = Y[:,0]
+
+        model = PySRRegressor(
+                              random_state=random_state,
+                              niterations=niterations,
+                              binary_operators=binary_operators,
+                              elementwise_loss=elementwise_loss,
+                              maxsize=maxsize,
+                              progress=progress,
+                              extra_sympy_mappings=extra_sympy_mappings,
+                              batching = batching,
+                              batch_size = batch_size,
+                              turbo=turbo,
+                              deterministic=deterministic,
+                              parallelism=parallelism
+                          )
+
+        model.fit(X, Y)
+
+        self.model = model
+
+
+        all_perf = []
+        all_eqs = []
+        all_terms = []
+        for i in range(len(model.equations_['equation'])):
+          all_predictions = (model.predict(X,i)>0.)*1
+          perf = jnp.mean(Y == all_predictions)
+          equation_sympy = sp.sympify(model.equations_['equation'][i]).expand()
+          terms = list(equation_sympy.as_coefficients_dict().keys())
+
+          #print('equation {}: {}, terms: {}'.format(i,perf,terms))
+          #print(equation_sympy)
+          #print('\n')
+
+          all_perf.append(perf)
+          all_eqs.append(equation_sympy)
+          all_terms.append(terms)
+
+
+
+        return (all_perf, all_eqs, all_terms)
+
+
+
+
+    ## 2BC ##
+
+
+    def train_2BC(self, key: jax.random.PRNGKey, dataset_size: int = 2000, print_min_results: bool = True) -> object:
+        """Train the 2 body correlator (2BC) ansatz on the  various SR objectives"""
+
+        model = TwoBodyModel(self.pairs, key, add_constant=self.add_constant)
+        alpha0 = model.alpha.copy()
+
+        if self.dataset_SR == None:
+          print('### Start preparing the dataset ###')
+          dataset_SR = self.prepare_dataset(key, dataset_size=dataset_size)
+          print('### Dataset prepared, start the trainnig ###')
+          self.dataset_SR = dataset_SR
+
+        else:
+          dataset_SR = self.dataset_SR
+          print('### Dataset already prepared, start the trainnig ###')
+        options = {}
+
+        if self.objective == "SR1":
+          loss = loss_SR1
+        elif self.objective == "SR2":
+          loss = loss_SR2
+        elif self.objective == "SR3":
+          loss = loss_SR3
+
+        res = minimize(
+            loss,
+            alpha0,
+            args=(model, *dataset_SR, options),
+            method="L-BFGS-B",
+            options={"maxiter": 500}
+        )
+
+        print('### Training finished ###')
+
+        if print_min_results:
+            print(res)
+
+        model.alpha = res.x
+        self.model = model
+
+
+
+        return model, res
+
+
+    ## create the datasets ##
+
+
+    def prepare_dataset(self, key: jax.random.PRNGKey, dataset_size: Optional[int] = 2000) -> tuple:
+        """Prepare the dataset, redirect to a method depending on the objective"""
+        if self.objective == "SR1":
+            return self.prepare_dataset_SR1(key, dataset_size)
+        if self.objective == "SR2":
+            return self.prepare_dataset_SR2(key)
+        if self.objective == "SR3":
+            if self.type_of_vk == "delta":
+              return self.prepare_dataset_SR3delta(key)
+            if self.type_of_vk == "cp":
+              return self.prepare_dataset_SR3cp(key)
+
+        raise ValueError(f"Objective {self.objective} not supported")
+
+
+
+
+    def prepare_dataset_SR1(self, key: jax.random.PRNGKey, dataset_size: int) -> tuple:
+        """Prepare the dataset for SR1"""
+
+        x_in_cluster = jnp.array([self.dataset.data[*id] for id in self.cluster_idx_in]).reshape(-1,self.dataset.data.shape[-1])
+        x_out_cluster = jnp.array([self.dataset.data[*id] for id in self.cluster_idx_out]).reshape(-1,self.dataset.data.shape[-1])
+
+        #randomly mix the snapshots and take first dataset_size samples
+        x_in_cluster = jax.random.permutation(key, x_in_cluster, axis=0)[:dataset_size]
+        key, subkey = jax.random.split(key)
+        x_out_cluster = jax.random.permutation(subkey, x_out_cluster, axis=0)[:dataset_size]
+
+        y_in_cluster = jnp.ones((x_in_cluster.shape[0],1))
+        y_out_cluster = jnp.zeros((x_out_cluster.shape[0],1))
+
+        X = jnp.concatenate((x_in_cluster,x_out_cluster), axis=0)
+        if self.shift_data:
+          X = X*2-1
+        Y = jnp.concatenate((y_in_cluster,y_out_cluster), axis=0)
+
+        return (X, Y)
+
+
+
+    def get_boundary_cluster(self, cluster_idx_in: jnp.ndarray) -> jnp.ndarray:
+        """ return the boundaries of the cluster"""
+        id_boundaries = []
+
+        for id_val in cluster_idx_in:
+          if [id_val[0]+1,id_val[1]] not in cluster_idx_in.tolist():
+            id_boundaries.append(tuple(id_val.tolist()))
+          if [id_val[0],id_val[1]+1] not in cluster_idx_in.tolist():
+            id_boundaries.append(tuple(id_val.tolist()))
+
+        id_boundaries = jnp.array(list(set(id_boundaries)))
+
+        return id_boundaries
+
+
+
+    def prepare_dataset_SR2(self, key: jax.random.PRNGKey) -> jnp.ndarray:
+        """Prepare the dataset for SR2"""
+        VAE = self.VAE_model
+        params = self.VAE_params
+        idx_mu_cluster = self.idx_mu_cluster#jnp.argwhere(jnp.isnan(mu_others))[0][0]
+
+        def scalar_lat_sum(params, x_flat, idx_mu_cluster):
+            """
+            x_flat: (B1*B2, H, W, C)
+            returns: scalar
+            """
+            means, _, _, _ = VAE.apply({'params': params}, x_flat, key)
+            return jnp.sum(means[:, idx_mu_cluster])
+        # flatten inputs
+        id_boundaries = self.get_boundary_cluster(self.cluster_idx_in)
+        x_boundaries = jnp.array([self.dataset.data[*id] for id in id_boundaries])
+        B1, B2, *spatial = x_boundaries.shape
+        x_flat = x_boundaries.reshape(B1 * B2, *spatial)
+
+        # gradient wrt x_flat
+        grads_flat = jax.grad(
+            lambda x: scalar_lat_sum(params, x, idx_mu_cluster)
+        )(x_flat)
+
+        #reshape back (no need in fact)
+        #grads_mu_wrt_x = grads_flat#.reshape(B1, B2, *spatial)
+        if self.shift_data:
+          x_flat = x_flat*2-1
+
+
+        return (x_flat, grads_flat)
+
+
+
+
+    def get_grad_mu_wrt_theta_SR3(self, key: jax.random.PRNGKey, id_boundaries: jnp.ndarray, id_dataset_small_MLP: Optional[jnp.ndarray] = None, print_training: bool=True) -> jnp.ndarray:
+        """compute the gradiant of mu wrt theta by training a small auxiliary MLP, needed for SR3"""
+
+
+        #train a little MLP: theta -> mu
+
+
+        def jacobian_penalty(params, thetas):
+            preds = jax.vmap(lambda t: jax.grad(lambda x: jnp.squeeze(theta_to_mu_net.apply(params, x)))(t))(thetas)
+            return jnp.mean(jnp.sum(preds**2, axis=1))
+
+
+        def MSE_loss(params, dataset_small_MLP):
+
+            theta, mu1 = dataset_small_MLP
+            pred_mu1 = theta_to_mu_net.apply(params, theta)[:,0]
+            loss = jnp.mean((pred_mu1 - mu1)**2) + 0.01 * jacobian_penalty(params, theta)
+            return loss
+
+
+
+        val_grad_fn = jax.jit(jax.value_and_grad(MSE_loss))
+
+
+        id_dataset_small_MLP = None
+        if id_dataset_small_MLP == None:
+          id_dataset_small_MLP = jnp.argwhere(jnp.abs(self.mu_cluster)>-100000) #just take the entire param. space
+
+        dataset_theta = jnp.array([[self.dataset.thetas[i][id[i]] for i in range(len(self.dataset.thetas))] for id in id_dataset_small_MLP])
+
+
+        theta_mean = dataset_theta.mean(axis=0)
+        theta_std  = dataset_theta.std(axis=0) + 1e-8
+
+        def normalize_theta(theta):
+            return (theta - theta_mean) / theta_std
+
+        theta_norm = normalize_theta(dataset_theta) #then ∂f/∂x = (∂f/∂x_norm) * (1/std)).
+
+        dataset_mu1 = jnp.array([self.mu_cluster[id[0],id[1]] for id in id_dataset_small_MLP])
+        dataset_small_MLP = (theta_norm, dataset_mu1)
+
+        theta_to_mu_net = FFNN_theta_to_mu(hidden_dim=8, num_layers=2)
+        params_small_MLP = theta_to_mu_net.init(key, jnp.ones((2,)))
+
+        #Optimizer
+        lr = 0.001
+        opt = optax.adabelief(learning_rate=lr)
+        opt_state = opt.init(params_small_MLP)
+
+
+        #Containers to store the values of the losses during the training
+        history_loss_small_MLP = []
+
+        num_epochs = 2000
+
+
+        ### TRAINING ###
+
+        print("small MLP training started...")
+
+        for i in range(num_epochs):
+
+            val, grad = val_grad_fn(params_small_MLP, dataset_small_MLP)
+            updates, opt_state = opt.update(grad, opt_state, params_small_MLP)
+            params_small_MLP = optax.apply_updates(params_small_MLP, updates)
+
+            if i%10==0:
+                  history_loss_small_MLP.append(val.tolist())
+            if i%200==0 and print_training==True:
+                  print("step: {}, loss: {}".format(i,val))
+
+        print("small MLP training finished!")
+
+        if print_training==True:
+            plt.rcParams['font.size'] = 16
+            plt.figure(figsize=(5,4),dpi=50)
+
+            epochs = jnp.linspace(0,num_epochs,len(history_loss_small_MLP))
+
+            plt.semilogy(epochs,history_loss_small_MLP,color=self.cmap(0.3), label="MSE")#
+            plt.xlabel('epochs')
+            plt.ylabel(r'$\mathcal{L}$')
+
+            plt.show()
+
+
+        self.params_small_MLP = params_small_MLP
+        self.theta_to_mu_net = theta_to_mu_net
+
+        ### prepare the dataset
+        ## grads dmu1/dtheta
+
+        def pred_mu(theta, params):
+            # ensure a scalar
+            return jnp.squeeze(theta_to_mu_net.apply(params_small_MLP, theta))
+
+        get_grads_mu1 = jax.vmap(jax.grad(pred_mu), in_axes=(0, None))
+        theta_boundaries = jnp.array([[self.dataset.thetas[i][id[i]] for i in range(len(self.dataset.thetas))] for id in id_boundaries])
+        grads_mu_wrt_theta_boundaries = get_grads_mu1(normalize_theta(theta_boundaries), params_small_MLP)/theta_std[None,:] #∂f/∂x = (∂f/∂x_norm) * (1/std)).
+
+        return grads_mu_wrt_theta_boundaries
+
+
+
+
+    def prepare_dataset_SR3cp(self, key: jax.random.PRNGKey) -> tuple:
+        """
+        prepare the dataset for SR3cp: {grads_mu_wrt_theta, vk from cp, x}
+        compute vk = dx/dtheta = dcp(x)/dmu1*dmu1/d_theta using DEC and small MLP
+        """
+
+
+        VAE = self.VAE_model
+        VAE_params = self.VAE_params
+
+        def get_cp(mu1, params_decoder, z, x, idx_mu_cluster, idx_spin):
+            """
+            need a scalar output to get the grad so need
+            x shape: (N)
+            mu1 shape: (1)
+            z shape: (1,5)
+            """
+
+            z = z.at[idx_mu_cluster].set(mu1)
+            inputs = (z[None,:], x[None,:])
+
+            cp = VAE.decoder.apply(params_decoder, inputs)
+            return cp[0,idx_spin,0]
+
+        #first take z for each boundary points shape:
+        id_boundaries = self.get_boundary_cluster(self.cluster_idx_in)
+        latent_dim = VAE.encoder.latent_dim
+        z = jnp.zeros((jnp.shape(id_boundaries)[0],jnp.shape(self.dataset.data)[2],latent_dim))
+
+        B1, B2, B3, N = self.dataset.data.shape
+        all_mean, *_ = VAE.apply({'params': VAE_params}, self.dataset.data.reshape(-1,N), key)
+        all_mean = all_mean.reshape(B1, B2, B3, -1)
+
+        for i,id in enumerate(id_boundaries):
+          z = z.at[i,:].set(all_mean[*id,:,:])
+
+
+        x_boundaries = jnp.array([self.dataset.data[*id] for id in id_boundaries])
+
+        get_dcp_dmu1 = jax.grad(get_cp, argnums=0)
+
+        #vmap on 1) on sites nbr 2) on batch #3) on point in theta space (too memo cons)
+        #get_dcp_dmu1_vmap = jax.vmap(jax.vmap(get_dcp_dmu1, in_axes=(None, None, None, None, None, 0)), in_axes=(0, None, 0, 0, None, None))#, in_axes=(0, None, 0, 0, None, None))
+        get_dcp_dmu1_vmap = jax.jit(jax.vmap(get_dcp_dmu1, in_axes=(0, None, 0, 0, None, None)))#, in_axes=(0, None, 0, 0, None, None))
+        #very memo consuming, need to loop... :(
+
+        params_decoder = {'params': VAE_params['decoder']}
+        all_dcp_dmu1_boundaries = jnp.zeros((jnp.shape(id_boundaries)[0],jnp.shape(self.dataset.data)[2],N))
+        for i in range(jnp.shape(id_boundaries)[0]):
+          for j in range(N):
+            all_dcp_dmu1_boundaries = all_dcp_dmu1_boundaries.at[i,:,j].set(get_dcp_dmu1_vmap(z[i,:,self.idx_mu_cluster], params_decoder, z[i], x_boundaries[i], self.idx_mu_cluster, j))
+
+        key, subkey = jax.random.split(key)
+        grads_mu_wrt_theta_boundaries = self.get_grad_mu_wrt_theta_SR3(subkey, id_boundaries)
+
+        vk_cp = jnp.einsum('ijk,ijl->ijkl', all_dcp_dmu1_boundaries, jnp.tile(grads_mu_wrt_theta_boundaries[:,None,:], reps=(1,jnp.shape(self.dataset.data)[2],1)))
+
+        vk_cp = vk_cp.reshape(-1,self.dataset.data.shape[-1],len(self.dataset.thetas))
+        G = jnp.tile(grads_mu_wrt_theta_boundaries[:,None,:], reps=(1,jnp.shape(self.dataset.data)[2],1)).reshape(-1,len(self.dataset.thetas))
+        X = x_boundaries.reshape(-1,self.dataset.data.shape[-1])
+        if self.shift_data:
+          X = X*2-1
+
+
+        return (X, vk_cp, G)
+
+
+
+
+    def prepare_dataset_SR3delta(self, key: jax.random.PRNGKey) -> jnp.ndarray:
+        """
+        prepare the dataset for SR3delta: {grads_mu_wrt_theta, vk from finite diff, x}
+        compute vk = delta_x/delta_theta using a small MLP to get the gradient of mu wrt theta
+        finite differences: weighted sum of the 2 neigbouring points where the grads are pointing
+        """
+
+        id_boundaries = self.get_boundary_cluster(self.cluster_idx_in)
+        key, subkey = jax.random.split(key)
+        grads_mu_wrt_theta_boundaries = self.get_grad_mu_wrt_theta_SR3(subkey, id_boundaries)
+
+        # Function to get 2 neighbors in the gradient direction
+        def get_direction_neighbors(point, grad):
+            px, py = point
+            gx, gy = grad
+
+            main_dir = jnp.argmax(jnp.abs(grad))
+            n1 = jnp.array([px+(main_dir==0)*jnp.sign(grad[main_dir]),py+(main_dir==1)*jnp.sign(grad[main_dir])])
+            n2 = jnp.array([n1[0]+(main_dir==1)*jnp.sign(grad[(main_dir==1)*1]), n1[1]+(main_dir==0)*jnp.sign(grad[(main_dir==0)*1])])
+
+            return n1, n2
+
+        weighted_sums_xf = []
+        weighted_sums_thetaf = []
+        theta1 = self.dataset.thetas[0]
+        theta2 = self.dataset.thetas[1]
+        
+
+        for point, grad in zip(id_boundaries, grads_mu_wrt_theta_boundaries):
+            n1, n2 = get_direction_neighbors(point, grad)
+
+            # Compute weights from gradient components
+            w = jnp.abs(grad)
+            w = w / (w.sum() + 1e-12)
+
+            n1 = n1.astype(int)
+            n2 = n2.astype(int)
+
+            # Weighted sum of 2 neighbors TODO, can adapt for more/be a hyperparameter
+            if n2[0]>0 and n2[1]>0 and n2[0]<len(theta1) and n2[1]<len(theta2):
+                xf = w[0] * self.dataset.data[n1[0],n1[1]] + w[1] * self.dataset.data[n2[0],n2[1]]
+                thetaf = w[0] * jnp.array([theta1[n1[0]],theta2[n1[1]]]) + w[1] * jnp.array([theta1[n2[0]],theta2[n2[1]]])
+            else:
+                xf = self.dataset.data[n1[0],n2[0]]
+                thetaf = jnp.array([theta1[n1[0]],theta2[n1[1]]])
+
+            weighted_sums_xf.append(xf)
+            weighted_sums_thetaf.append(thetaf)
+
+
+        weighted_sums_xf = jnp.array(weighted_sums_xf)
+        weighted_sums_thetaf = jnp.array(weighted_sums_thetaf)
+
+        xi = []
+        for id in id_boundaries:
+          xi.append(self.dataset.data[*id])
+        xi = jnp.array(xi)
+
+
+        theta_boundaries = jnp.array([[self.dataset.thetas[i][id[i]] for i in range(len(self.dataset.thetas))] for id in id_boundaries])
+
+        delta_x = weighted_sums_xf-xi
+
+        #suppose a regular spacing. TODO adapt for non-regular spacing
+        spacing_delta = jnp.array([self.dataset.thetas[i][1]-self.dataset.thetas[i][0] for i in range(len(self.dataset.thetas))])
+
+        delta_theta = weighted_sums_thetaf/spacing_delta-theta_boundaries/spacing_delta
+        for id in jnp.argwhere(delta_theta==0):
+          delta_theta = delta_theta.at[*id].set(jnp.inf)
+
+        vk_delta = jnp.einsum('ikj,il->ikjl', delta_x, 1/delta_theta)
+        x_boundaries = jnp.array([self.dataset.data[*id] for id in id_boundaries])
+
+
+        vk_delta = vk_delta.reshape(-1,self.dataset.data.shape[-1],len(self.dataset.thetas))
+        G = jnp.tile(grads_mu_wrt_theta_boundaries[:,None,:], reps=(1,jnp.shape(self.dataset.data)[2],1)).reshape(-1,len(self.dataset.thetas))
+        X = x_boundaries.reshape(-1,self.dataset.data.shape[-1])
+        if self.shift_data:
+          X = X*2-1
+
+
+        return (X, vk_delta, G)
+
+
+
+
+
+    ### plot/compute prediction ###
+
+
+    def plot_alpha(self, topology: list, edge_scale: int = 10, name: str = '', threshold: float = None):
+        """ plot the 2 body correlator weights alpha_ij"""
+
+        pos = {}
+        for yi,row in enumerate(topology):
+            for xi,val in enumerate(row):
+                pos[val] = (xi, -yi)
+
+        alpha = self.model.alpha
+        if threshold != None:
+          alpha = (jnp.abs(alpha)>threshold)*alpha
+
+        shape = jnp.array(topology).transpose().shape
+        fig, ax = plt.subplots(figsize=shape, dpi=100)
+        plt.rcParams['font.size'] = 18
+
+        def manhattan(i, j):
+            (x1,y1) = pos[i]
+            (x2,y2) = pos[j]
+            return abs(x1-x2) + abs(y1-y2)
+
+        for (p,(a,b)) in enumerate(self.model.pairs):
+            i = int(a[1:]); j = int(b[1:])
+            (x1,y1) = pos[i]; (x2,y2) = pos[j]
+
+            a = alpha[p]
+            color = '#e79534ff' if a > 0 else '#96788dff'
+            lw = abs(a)*edge_scale
+
+            if manhattan(i, j) >= 2:
+                # curve these edges
+                curved_edge(ax, x1, y1, x2, y2, curvature=0.25,
+                            color=color, linewidth=lw, zorder=1)
+            else:
+                # normal straight edge
+                ax.plot([x1,x2], [y1,y2], color=color, linewidth=lw, zorder=1)
+
+        # plot nodes
+        for i,(x,y) in pos.items():
+            ax.scatter(x,y,color='white',s=400, zorder=3)
+            ax.text(x, y, f"x{i}", ha='center', va='center', zorder=4)
+
+
+        ax.set_title(r'$\alpha_{ij}$, '+name, loc='center')
+
+
+        ax.set_aspect('equal')
+        ax.axis('off')
+
+
+
+        ax.text(0.535, 0.1,
+                f"edge scale = {edge_scale}",#   (linewidth = edge_scale · |α|)",
+                ha='center', va='top',
+                transform=ax.transAxes,
+                fontsize=14)
+
+
+        plt.show()
+
+
+    def compute_and_plot_prediction(self, theta_pair: tuple=(1,0), values_other_thetas: tuple = (), name: str = '', class_pred: bool=False) -> jnp.ndarray:
+        """compute and plot f(x) on the parameter space"""
+
+        if self.search_space != '2_body_correlator':
+          raise ValueError("Only implemented for 2_body_correlator at the moment")
+
+        model = self.model
+        theta1 = self.dataset.thetas[theta_pair[0]]
+        theta2 = self.dataset.thetas[theta_pair[1]]
+        shape_thetas = (len(theta1),len(theta2))
+
+        #def compute_prediction(alpha,X):
+        predictions = jnp.zeros(shape_thetas)
+        #model.alpha = alpha
+        model_predic_jit = jax.jit(model.predict)
+        for i in range(jnp.size(theta1)):
+          for j in range(jnp.size(theta2)):
+              location = [] #in parameter space (theta-space)
+              c = 0
+              for k in range(len(self.dataset.thetas)):
+                if k not in theta_pair:
+                  location.append(values_other_thetas[k-c])#
+                elif k == theta_pair[0]:
+                  location.append(i)
+                  c += 1
+                elif k == theta_pair[1]:
+                  location.append(j)
+                  c += 1
+              d = self.dataset.data[tuple(location)]
+              if self.shift_data:
+                d = d*2-1
+              predictions = predictions.at[i,j].set(jnp.mean(model_predic_jit(d)))
+            #return predictions
+
+
+        #compute_prediction_vmap = jax.jit(jax.vmap(compute_prediction, in_axes=(0,None)))
+        #all_predictions = compute_prediction_vmap(model.alpha, dataset.data)
+
+        if class_pred==True:
+          if self.objective != 'SR1':
+            raise ValueError("predicting the class onlyy makes sense for SR1")
+          predictions = (predictions>0)*1
+
+
+        plt.rcParams['font.size'] = 16
+        plt.figure(figsize=(3,3),dpi=100)
+
+
+        plt.imshow(jnp.flipud(predictions), cmap=self.cmap, aspect='auto')#,vmin=0.3)
+
+        cbar = plt.colorbar(orientation="horizontal", pad=0.03, location="top")
+        cbar.set_label(r'pred. {}'.format(name), fontsize=20, labelpad=10)
+
+        plt.ylabel(r'$h$')
+        plt.xlabel(r'$J_2$')
+
+        y_tick_positions = [0,10,19]  # Positions for the ticks
+        y_tick_labels = ['2', '1', '0.1']  # Labels for the ticks
+        plt.yticks(y_tick_positions, y_tick_labels)
+
+        x_tick_positions = [0, 10, 20]  # Positions for the ticks
+        x_tick_labels = ['0', '0.75', '1.5']  # Labels for the ticks
+        plt.xticks(x_tick_positions, x_tick_labels)
+
+        plt.show()
+
+        return predictions
+
+
+
+
+    def reduce_alpha(self, random_state: int,
+                     niterations: int = 200,
+                     binary_operators=["+", "*", "/", "-"],
+                     unary_operators=["exp", "log", "sin", "cos", "tanh"],
+                     elementwise_loss="loss(x, y) = (x - y)^2",
+                     maxsize: int = 25,
+                     deterministic: bool = True,
+                     extra_sympy_mappings={"C": "C"}) -> str:
+        """ Use pysr to reduce the alpha. It tries to find a fct: g(i,j)->alpha_ij"""
+
+        try:
+            from pysr import PySRRegressor
+        except ImportError as e:
+            raise ValueError(
+                "pysr package not found, need to install it"
+            ) from e
+        else:
+            print("PySRRegressor imported")
+            import sympy as sp
+
+        if self.search_space != '2_body_correlator':
+          raise ValueError("this methods should only be used after having perform a search with the 2_body_correlator Ansatz")
+
+        pairs_str = self.pairs
+        pairs = jnp.array([[int(t[0][1:]),int(t[1][1:])] for t in pairs_str])
+        X = pairs
+        Y = self.model.alpha
+
+        PySRR_model_4_alpha = PySRRegressor(
+                              random_state=random_state,
+                              niterations=niterations,
+                              binary_operators=binary_operators,
+                              elementwise_loss=elementwise_loss,
+                              maxsize=maxsize,
+                              extra_sympy_mappings=extra_sympy_mappings,
+                              deterministic=deterministic,
+                              parallelism='serial',
+                          )
+
+        PySRR_model_4_alpha.fit(X, Y)
+
+
+        return sp.simplify(PySRR_model_4_alpha.get_best().equation)
+
+
 
 

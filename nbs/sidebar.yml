@@ -3,8 +3,14 @@ website:
     contents:
       - index.ipynb
       - 00_core.ipynb
+      - section: examples
+        contents:
+          - examples/index_examples.ipynb
+          - examples/qdisc_ClusterIsing.ipynb
+          - examples/qdisc_Rydberg.ipynb
       - section: lib_nbs
         contents:
+          - lib_nbs/index_docs.ipynb
           - section: clustering
             contents:
               - lib_nbs/clustering/01_core.ipynb
@@ -20,3 +26,6 @@ website:
           - section: vae
             contents:
               - lib_nbs/vae/01_core.ipynb
+      - section: tutorials
+        contents:
+          - tutorials/J1J2_tuto.ipynb

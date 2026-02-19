@@ -5,7 +5,7 @@
 # %% auto #0
 __all__ = ['GaussianMixture', 'select_n_components']
 
-# %% ../../nbs/lib_nbs/clustering/01_core.ipynb #fd422d46
+# %% ../../nbs/lib_nbs/clustering/01_core.ipynb #33178e11
 import jax
 import jax.numpy as jnp
 from jax.scipy.special import logsumexp
@@ -14,7 +14,7 @@ from sklearn.metrics import silhouette_score, adjusted_rand_score, normalized_mu
 from sklearn.model_selection import KFold
 import numpy as np
 
-# %% ../../nbs/lib_nbs/clustering/01_core.ipynb #0734eac4
+# %% ../../nbs/lib_nbs/clustering/01_core.ipynb #b332b9c2
 class GaussianMixture:
     def __init__(self, n_components, tol=1e-6, max_iter=100,
                  reg_covar=1e-6, init_params='kmeans'):

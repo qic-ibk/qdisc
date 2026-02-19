@@ -5,7 +5,7 @@
 
 <p align="center">
 
-<img width="250" src="figs/VAE4Spins_logo.png">
+<img width="250" src="nbs/figs/VAE4Spins_logo.png">
 </p>
 
 <h3 align="center">
@@ -22,11 +22,10 @@ Discovery</em>
 
 <p align="center">
 
-<a href="https://qic-ibk.github.io/projective_simulation/">Get
-started</a> \|
-<a href="https://qic-ibk.github.io/projective_simulation/lib_nbs/index_docs.html">Documentation</a>
+<a href="https://PaulinDS.github.io/qdisc/">Get started</a> \|
+<a href="https://PaulinDS.github.io/qdisc/lib_nbs/index_docs.html">Documentation</a>
 \|
-<a href="https://qic-ibk.github.io/projective_simulation/tutorials/index_tutorials.html">Tutorials</a>
+<a href="https://PaulinDS.github.io/qdisc/tutorials/J1J2_tuto.html">Tutorials</a>
 </p>
 
 **qdisc** is a library for discovering and interpreting quantum phases

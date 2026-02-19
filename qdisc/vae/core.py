@@ -7,12 +7,19 @@ __all__ = ['matrix_log_density_gaussian', 'log_importance_weight_matrix', 'VAEmo
            'gaussian_negloglik', 'kl_standard_normal', 'log_normal_pdf', 'log_density_gaussian', 'TC_term',
            'VAETrainer']
 
-# %% ../../nbs/lib_nbs/vae/01_core.ipynb #ba981e8f
+# %% ../../nbs/lib_nbs/vae/01_core.ipynb #7151bc32
 import jax
 from jax import numpy as jnp
 from flax import linen as nn
+from matplotlib.colors import LinearSegmentedColormap
+from typing import Any, Callable, Optional, Tuple, Dict
+import optax
+from ..dataset import Dataset
+from flax.training import train_state
+import matplotlib.pyplot as plt
+from netket import jax as nkjax
 
-# %% ../../nbs/lib_nbs/vae/01_core.ipynb #fbfc99cd
+# %% ../../nbs/lib_nbs/vae/01_core.ipynb #c7990126
 #code inspired from the one found in https://github.com/YannDubs/disentangling-vae/tree/master
 
 def matrix_log_density_gaussian(x: jnp.ndarray, mu: jnp.ndarray, logvar: jnp.ndarray) -> jnp.ndarray:
@@ -57,7 +64,7 @@ def _get_log_pz_qz_prodzi_qzCx(latent_sample: jnp.ndarray, latent_dist: jnp.ndar
 
     return log_pz, log_qz, log_prod_qzi, log_q_zCx
 
-# %% ../../nbs/lib_nbs/vae/01_core.ipynb #be76d07f
+# %% ../../nbs/lib_nbs/vae/01_core.ipynb #30070ede
 class VAEmodel(nn.Module):
     """
         VAE model, wrapper calling the encoder -> reparam -> decoder
@@ -158,12 +165,7 @@ def TC_term(mean: jnp.ndarray, logvar: jnp.ndarray, z: jnp.ndarray) -> jnp.ndarr
     return tc_loss
 
 
-# %% ../../nbs/lib_nbs/vae/01_core.ipynb #7811eb70
-from typing import Any, Callable, Optional, Tuple, Dict
-import optax
-from ..dataset import Dataset
-from flax.training import train_state
-
+# %% ../../nbs/lib_nbs/vae/01_core.ipynb #23624deb
 class VAETrainer:
     """
         Training wrapper for a the cpVAE for quantum
@@ -377,9 +379,9 @@ class VAETrainer:
                   elif k == theta_pair[1]:
                     location.append(j)
                     c += 1
-                d = dataset.data[tuple(location)]
+                d = self.dataset.data[tuple(location)]
 
-                mean, logvar, z, cp = myvaetrainer.model.apply({'params': myvaetrainer.state.params}, d, key)
+                mean, logvar, z, cp = self.model.apply({'params': self.state.params}, d, key)
 
                 all_mean = all_mean.at[i,j].set(jnp.mean(mean,axis=0))
                 all_mean_abs = all_mean_abs.at[i,j].set(jnp.mean(jnp.abs(mean),axis=0))

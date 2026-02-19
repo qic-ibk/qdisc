@@ -6,14 +6,14 @@
 __all__ = ['CircularConv1D', 'EncoderCNNcirc1D', 'EncoderCNN2D', 'PositionalEncoding', 'shift_right', 'Embedding',
            'Transformer_encoder', 'MaskedDense1D', 'ARNNDense', 'Transformer_decoder']
 
-# %% ../../nbs/lib_nbs/nn/01_core.ipynb #428f29f7
+# %% ../../nbs/lib_nbs/nn/01_core.ipynb #55e653dc
 import jax
 from jax import numpy as jnp
 from flax import linen as nn
 from typing import Any
 
 
-# %% ../../nbs/lib_nbs/nn/01_core.ipynb #8fb1c327
+# %% ../../nbs/lib_nbs/nn/01_core.ipynb #d7109511
 class CircularConv1D(nn.Module):
     """ Convolutional layer with circular padding (used for Q. system with PBC)"""
     features: int
@@ -91,7 +91,7 @@ class EncoderCNNcirc1D(nn.Module):
 
         return mean, logvar
 
-# %% ../../nbs/lib_nbs/nn/01_core.ipynb #0e7915f6
+# %% ../../nbs/lib_nbs/nn/01_core.ipynb #2e4dec23
 class EncoderCNN2D(nn.Module):
     """
         Encoder with convolutional layer used for 2d systems
@@ -149,7 +149,7 @@ class EncoderCNN2D(nn.Module):
         return mean, logvar
 
 
-# %% ../../nbs/lib_nbs/nn/01_core.ipynb #3299c11a
+# %% ../../nbs/lib_nbs/nn/01_core.ipynb #1cd4993f
 class PositionalEncoding(nn.Module):
     """ Positional encoding module."""
     d_model: int
@@ -306,7 +306,7 @@ class Transformer_encoder(nn.Module):
 
 
 
-# %% ../../nbs/lib_nbs/nn/01_core.ipynb #069d887e
+# %% ../../nbs/lib_nbs/nn/01_core.ipynb #dc2472cb
 class MaskedDense1D(nn.Module):
     """Masked linear layer"""
 
@@ -403,7 +403,7 @@ class ARNNDense(nn.Module):
         return out
 
 
-# %% ../../nbs/lib_nbs/nn/01_core.ipynb #c79b1062
+# %% ../../nbs/lib_nbs/nn/01_core.ipynb #754a4f0f
 class Transformer_decoder(nn.Module):
     """
         Decoder based on the transformer architecture

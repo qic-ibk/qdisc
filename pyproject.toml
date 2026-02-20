@@ -15,7 +15,21 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
 ]
-dependencies = []
+dependencies = [
+	"jax>=0.4.38",
+	"matplotlib",
+	"netket>=3.15.2"
+]
+
+[project.optional-dependencies]
+cuda12 = [
+    "jax[cuda12]>=0.4.38"
+]
+
+cuda11 = [
+    "jax[cuda11]>=0.4.38"
+]
+
 
 [project.urls]
 Repository = "https://github.com/PaulinDS/qdisc"

@@ -16,16 +16,18 @@ Discovery</em>
 
 <p align="center">
 
-<a href="https://badge.fury.io/py/projective_simulation"><img src="https://badge.fury.io/py/projective_simulation.svg" alt="PyPI version"></a>
-<a href="https://badge.fury.io/py/projective_simulation"><img src="https://img.shields.io/badge/python-3.10-red" alt="Python version"></a>
+<img src="https://badge.fury.io/py/qdisc.svg" alt="PyPI version">
+<img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python >=3.11">
+<img src="https://img.shields.io/badge/license-MIT-green" alt="License">
+<img src="https://img.shields.io/badge/docs-online-blue">
 </p>
 
 <p align="center">
 
 <a href="https://PaulinDS.github.io/qdisc/">Get started</a> \|
-<a href="https://PaulinDS.github.io/qdisc/lib_nbs/index_docs.html">Documentation</a>
+<a href="https://PaulinDS.github.io/qdisc/nbs/lib_nbs/index_docs.html">Documentation</a>
 \|
-<a href="https://PaulinDS.github.io/qdisc/tutorials/J1J2_tuto.html">Tutorials</a>
+<a href="https://PaulinDS.github.io/qdisc/nbs/tutorials/J1J2_tuto.html">Tutorials</a>
 </p>
 
 **qdisc** is a library for discovering and interpreting quantum phases

@@ -411,6 +411,7 @@ class SymbolicRegression:
 
         X, Y = self.prepare_dataset_SR1(key, dataset_size)
         Y = Y[:,0]
+        from pysr import PySRRegressor
 
         model = PySRRegressor(
                               random_state=random_state,
@@ -1022,6 +1023,8 @@ class SymbolicRegression:
         pairs = jnp.array([[int(t[0][1:]),int(t[1][1:])] for t in pairs_str])
         X = pairs
         Y = self.model.alpha
+
+        from pysr import PySRRegressor
 
         PySRR_model_4_alpha = PySRRegressor(
                               random_state=random_state,

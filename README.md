@@ -74,11 +74,11 @@ The complete discovery pipeline is summarized below.
 # Getting Started
 
 To begin using the library, we recommend starting with the two
-[tutorials](tutorials) notebooks. These tutorials provide a step-by-step
-introduction to the core tools and workflows, using a simple toy
-example: the $J_1$–$J_2$ model on a square lattice.
+[tutorials](nbs/tutorials) notebooks. These tutorials provide a
+step-by-step introduction to the core tools and workflows, using a
+simple toy example: the $J_1$–$J_2$ model on a square lattice.
 
-Additional [examples](examples) notebooks (TODO: add links) are also
+Additional [examples](nbs/examples) notebooks (TODO: add links) are also
 available and cover a variety of quantum data types, including: -
 Measurement snapshots of Rydberg atom systems - Classical shadows of the
 cluster Ising model - Hybrid data from a fermionic system

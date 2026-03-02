@@ -28,4 +28,5 @@ website:
               - lib_nbs/vae/01_core.ipynb
       - section: tutorials
         contents:
-          - tutorials/J1J2_tuto.ipynb
+          - tutorials/J1J2_tuto1_VAE.ipynb
+          - tutorials/J1J2_tuto2_SR.ipynb

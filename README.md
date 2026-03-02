@@ -53,7 +53,7 @@ The complete discovery pipeline is illustrated below:
 
 <p align="center">
 
-<img width="250" src="nbs/figs/VAE4Spins_pipeline_github.png">
+<img width="500" src="nbs/figs/VAE4Spins_pipeline_github.png">
 
 # Getting Started
 

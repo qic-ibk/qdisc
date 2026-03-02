@@ -30,58 +30,42 @@ Discovery</em>
 <a href="https://PaulinDS.github.io/qdisc/nbs/tutorials/J1J2_tuto.html">Tutorials</a>
 </p>
 
-**qdisc** is a library for discovering and interpreting quantum phases
-directly from raw quantum data, such as measurements obtained in quantum
-experiments. It focuses on interpretable machine learning methods that
-uncover emergent structure without requiring labeled data or prior
-knowledge of the phase diagram.
+**qdisc** is a library for exploring and understanding quantum phases
+directly from raw quantum data, such as measurements from experiments.
+It uses interpretable machine learning techniques to uncover structure
+in the data — without requiring labeled samples or prior knowledge of
+the phase diagram.
 
-The library provides end-to-end tools to learn a low-dimensional
-representation of the phase space from raw inputs. At its core, QDisc
-employs a variational autoencoder (**VAE**) trained to reconstruct
-conditional probabilities of the input data. The resulting latent
-representation naturally aligns with the underlying structure of the
-phase space and can reveal previously unknown phases or clusters.
+The library provides end-to-end tools to learn a compact,
+low-dimensional representation of the phase space from raw inputs. At
+its core is a variational autoencoder (**VAE**) trained to model
+conditional probabilities in the data. The resulting representation
+often reflects the underlying physical structure and can highlight
+distinct phases or previously unnoticed patterns.
 
-To interpret the physical meaning of the structures uncovered in latent
-space, QDisc integrates symbolic regression methods (**SR**). These
-methods search for compact analytic expressions that characterize the
-identified clusters, enabling the extraction of interpretable order
-parameters and effective physical descriptors directly from the learned
-representation.
+To make these learned structures physically meaningful, qdisc
+incorporates symbolic regression (**SR**). This step searches for simple
+analytic expressions that describe the identified clusters, enabling the
+extraction of interpretable order parameters and effective physical
+descriptors directly from the data.
 
-The complete discovery pipeline is summarized below.
+The complete discovery pipeline is illustrated below:
 
-> **Automated Phase Discovery Pipeline**
->
-> **Setup:** Quantum system tunable by parameters  
-> $\{\theta_1, \dots, \theta_k\}$
->
-> 1.  Collect quantum data $\vec{x}$ for a wide range of parameter
->     values  
->     *Snapshots, classical shadows, densities, etc.*
-> 2.  Train a VAE on the unlabeled dataset such that it reconstructs the
->     conditional probabilities (cpVAE)
-> 3.  Identify active latent variables $z$  
->     *Select latent neurons with small variance $\sigma$*
-> 4.  Visualize the latent representation across the parameter space  
->     *Reveal phase structure and emergent clusters*
-> 5.  If unknown clusters are appearing:
->     - Apply symbolic regression to the latent representation  
->     - Extract compact analytic expressions  
->       *Interpret as candidate order parameters*
+<p align="center">
+
+<img width="250" src="nbs/figs/VAE4Spins_pipeline_github.png">
 
 # Getting Started
 
-To begin using the library, we recommend starting with the two
+To begin using the library, we recommend starting with the
 [tutorials](nbs/tutorials) notebooks. These tutorials provide a
 step-by-step introduction to the core tools and workflows, using a
 simple toy example: the $J_1$–$J_2$ model on a square lattice.
 
-Additional [examples](nbs/examples) notebooks (TODO: add links) are also
-available and cover a variety of quantum data types, including: -
-Measurement snapshots of Rydberg atom systems - Classical shadows of the
-cluster Ising model - Hybrid data from a fermionic system
+Additional [examples](nbs/examples) notebooks are also available and
+cover a variety of quantum data types, including: - Measurement
+snapshots of Rydberg atom systems - Classical shadows of the cluster
+Ising model - Hybrid data from a fermionic system
 
 These examples reproduce the results presented in the accompanying paper
 (TODO: add reference).
@@ -95,12 +79,6 @@ Install latest from the GitHub
 
 ``` sh
 $ pip install git+https://github.com/PaulinDS/qdisc.git
-```
-
-or from [conda](https://anaconda.org/PaulinDS/qdisc)
-
-``` sh
-$ conda install -c PaulinDS qdisc
 ```
 
 or from [pypi](https://pypi.org/project/qdisc/)

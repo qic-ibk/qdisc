@@ -16,7 +16,7 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
 ]
 dependencies = [
-	"sklearn>=1.8.0",
+	"sklearn>=1.0.0",
 	"jax>=0.4.38",
 	"matplotlib",
 	"netket>=3.15.2"

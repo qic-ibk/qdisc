@@ -20,7 +20,7 @@ import numpy as np
 from typing import Any, Callable, Optional, Tuple, Dict, Sequence
 from flax import linen as nn
 import optax
-from ..dataset import Dataset
+from ..dataset.core import Dataset
 
 # %% ../../nbs/lib_nbs/sr/01_core.ipynb #5bcf091c
 class FFNN_theta_to_mu(nn.Module):
@@ -86,10 +86,10 @@ def class_loss(tree, X, options, Y):
     return loss
 
 
-def loss_SR1(alpha, model, X, Y, options):
+def loss_SR1(alpha, model, X, Y, L1_reg, options):
     """loss used for the 2BC witb SR1"""
     model.alpha = alpha
-    return class_loss(model, X, options, Y)
+    return class_loss(model, X, options, Y) + L1_reg*jnp.mean(jnp.abs(alpha))
 
 
 
@@ -103,10 +103,10 @@ def derivative_loss_alpha_multi(tree, X, options, G):
     return MSE
 
 
-def loss_SR2(alpha, model, dataset, G, options):
+def loss_SR2(alpha, model, dataset, G, L1_reg, options):
     """loss used for the 2BC witb SR2"""
     model.alpha = alpha
-    return derivative_loss_alpha_multi(model, dataset, options, G)
+    return derivative_loss_alpha_multi(model, dataset, options, G) + L1_reg*jnp.mean(jnp.abs(alpha))
 
 
 
@@ -152,10 +152,10 @@ def derivative_loss_alpha_multi_vk(tree, X, options, vk, G):
 
 
 
-def loss_SR3(alpha, model, dataset, vk, G, options):
+def loss_SR3(alpha, model, dataset, vk, G, L1_reg, options):
     """loss used for 2BC with SR3"""
     model.alpha = alpha
-    return derivative_loss_alpha_multi_vk(model, dataset, options, vk, G)
+    return derivative_loss_alpha_multi_vk(model, dataset, options, vk, G) + L1_reg*jnp.mean(jnp.abs(alpha))
 
 
 
@@ -460,7 +460,7 @@ class SymbolicRegression:
     ## 2BC ##
 
 
-    def train_2BC(self, key: jax.random.PRNGKey, dataset_size: int = 2000, print_min_results: bool = True) -> object:
+    def train_2BC(self, key: jax.random.PRNGKey, dataset_size: int = 2000, L1_reg: float = 0., print_min_results: bool = True) -> object:
         """Train the 2 body correlator (2BC) ansatz on the  various SR objectives"""
 
         model = TwoBodyModel(self.pairs, key, add_constant=self.add_constant)
@@ -487,7 +487,7 @@ class SymbolicRegression:
         res = minimize(
             loss,
             alpha0,
-            args=(model, *dataset_SR, options),
+            args=(model, *dataset_SR, L1_reg, options),
             method="L-BFGS-B",
             options={"maxiter": 500}
         )

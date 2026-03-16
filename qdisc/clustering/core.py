@@ -236,3 +236,5 @@ def select_n_components(X, ks, n_init=5, max_iter=100, covariant_reg=1e-6, init_
     return results
 
 
+show_doc(GaussianMixture.__init__, name='GaussianMixture.init')
+

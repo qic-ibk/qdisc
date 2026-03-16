@@ -47,25 +47,29 @@ different identified regimes.
 
 <img width="700" src="figs/VAE4Spins_pipeline_github.png">
 
-# Getting Started
+# getting started
 
 To begin using the library, we recommend starting with the [tutorial
-notebooks](nbs/tutorials). We cover the two pillars of the `Qdisc`
-pipeline:
+notebooks](https://PaulinDS.github.io/qdisc/nbs/tutorials). We cover the
+two pillars of the `Qdisc` pipeline:
 
 1.  Using variational autoencoders to extract interpretable
-    representations ([link](nbs/tutorial/J1J2_tuto1_VAE.ipynb))
+    representations
+    ([link](https://PaulinDS.github.io/qdisc/nbs/tutorials/J1J2_tuto1_VAE.ipynb))
 2.  Finding closed forms for order paramters via symbolic regression
-    ([link](nbs/tutorial/J1J2_tuto1_SR.ipynb))
+    ([link](https://PaulinDS.github.io/qdisc/nbs/tutorials/J1J2_tuto2_SR.ipynb))
 
-Additional [example notebooks](nbs/examples) are used to illustrate
-specific applications, as those covered in the [manuscript (TODO)]():
+Additional [example
+notebooks](https://PaulinDS.github.io/qdisc/nbs/examples) are used to
+illustrate specific applications, as those covered in the [manuscript
+(TODO)]():
 
-1.  Measurement snapshots of Rydberg atom systems (**this one is not
-    useful because users don’t have the data!**)
+1.  Measurement snapshots of Rydberg atom systems
+    ([link](https://PaulinDS.github.io/qdisc/nbs/examples/qdisc_Rydberg.ipynb)).
+    The experimental data are not provided.
 2.  Classical shadows of the cluster Ising model
-    ([link](nbs/tutorial/qdisc_ClusterIsing.ipynb))
-3.  Hybrid data from a fermionic system (**missing?**)
+    ([link](https://PaulinDS.github.io/qdisc/nbs/examples/qdisc_ClusterIsing.ipynb))
+3.  Hybrid data from a fermionic system (**TODO add**)
 
 ## Usage
 
@@ -84,7 +88,7 @@ or from [pypi](https://pypi.org/project/qdisc/)
 $ pip install qdisc
 ```
 
-### Documentation
+### documentation
 
 Documentation can be found hosted on this GitHub
 [repository](https://github.com/PaulinDS/qdisc)’s
@@ -93,7 +97,7 @@ package manager specific guidelines on
 [conda](https://anaconda.org/PaulinDS/qdisc) and
 [pypi](https://pypi.org/project/qdisc/) respectively.
 
-## Citing
+## citing
 
 If you find the librairy usefull in your projects, please cite the
 accompanying [paper](paper):

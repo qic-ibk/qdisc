@@ -7,6 +7,10 @@ __all__ = ['matrix_log_density_gaussian', 'log_importance_weight_matrix', 'VAEmo
            'gaussian_negloglik', 'kl_standard_normal', 'log_normal_pdf', 'log_density_gaussian', 'TC_term',
            'VAETrainer']
 
+# %% ../../nbs/lib_nbs/vae/01_core.ipynb #8c3e0462
+from nbdev import show_doc
+from nbdev.showdoc import *
+
 # %% ../../nbs/lib_nbs/vae/01_core.ipynb #7151bc32
 import jax
 from jax import numpy as jnp

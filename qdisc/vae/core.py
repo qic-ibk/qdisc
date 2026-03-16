@@ -14,7 +14,7 @@ from flax import linen as nn
 from matplotlib.colors import LinearSegmentedColormap
 from typing import Any, Callable, Optional, Tuple, Dict
 import optax
-from ..dataset import Dataset
+from ..dataset.core import Dataset
 from flax.training import train_state
 import matplotlib.pyplot as plt
 from netket import jax as nkjax
@@ -164,6 +164,8 @@ def TC_term(mean: jnp.ndarray, logvar: jnp.ndarray, z: jnp.ndarray) -> jnp.ndarr
     #dw_kl_loss = (log_prod_qzi - log_pz).mean()
     return tc_loss
 
+
+show_doc(VAEmodel, name='VAEmodel')
 
 # %% ../../nbs/lib_nbs/vae/01_core.ipynb #23624deb
 class VAETrainer:
@@ -608,4 +610,4 @@ class VAETrainer:
 
 
 
-
+show_doc(VAETrainer, name='VAETrainer')

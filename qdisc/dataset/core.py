@@ -143,12 +143,6 @@ def get_classical_shadow(psi, num_shots, N, rng_key, bases = 'XYZ'):
 
 
 # %% ../../nbs/lib_nbs/dataset/01_core.ipynb #bbf55120
-#from typing import Sequence
-#from dataclasses import dataclass
-#from flax import linen as nn
-#import jax
-#import jax.numpy as jnp
-
 @dataclass
 class Dataset:
     def __init__(self, data: jnp.ndarray, thetas: Sequence[jnp.ndarray], data_type: str, local_dimension: int=0, local_states: jnp.ndarray=None):

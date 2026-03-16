@@ -17,6 +17,7 @@ classifiers = [
 ]
 dependencies = [
 	"scipy>=1.17.0",
+        "scikit-learn>=1.8.0,
 	"jax>=0.4.38",
 	"matplotlib",
 	"netket>=3.15.2"

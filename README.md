@@ -5,7 +5,7 @@
 
 <p align="center">
 
-<img width="250" src="nbs/figs/VAE4Spins_logo.png">
+<img width="250" src="figs/VAE4Spins_logo.png">
 </p>
 
 <h3 align="center">
@@ -30,45 +30,42 @@ Discovery</em>
 <a href="https://PaulinDS.github.io/qdisc/nbs/tutorials/J1J2_tuto.html">Tutorials</a>
 </p>
 
-**qdisc** is a library for exploring and understanding quantum phases
-directly from raw quantum data, such as measurements from experiments.
-It uses interpretable machine learning techniques to uncover structure
-in the data — without requiring labeled samples or prior knowledge of
-the phase diagram.
+`QDisc` is a library for discovering quantum phenomena from raw quantum
+data via interpretable machine learning. Without any prior knowledge on
+the input data, the pipeline aims to uncover unknown regimes and find
+order parameters that can help us identify interesting physics in a
+human readable form.
 
-The library provides end-to-end tools to learn a compact,
-low-dimensional representation of the phase space from raw inputs. At
-its core is a variational autoencoder (**VAE**) trained to model
-conditional probabilities in the data. The resulting representation
-often reflects the underlying physical structure and can highlight
-distinct phases or previously unnoticed patterns.
-
-To make these learned structures physically meaningful, qdisc
-incorporates symbolic regression (**SR**). This step searches for simple
-analytic expressions that describe the identified clusters, enabling the
-extraction of interpretable order parameters and effective physical
-descriptors directly from the data.
-
-The complete discovery pipeline is illustrated below:
+The pipeline is composed of two main components: first, a variational
+autoencoder (VAE) learns representations that compress the input into
+the minimal set of physical parameters needed to understand the data.
+Second, and based on the learned representations, a symbolic regression
+(SR) module finds closed form equations able to distinguish the
+different identified regimes.
 
 <p align="center">
 
-<img width="700" src="nbs/figs/VAE4Spins_pipeline_github.png">
+<img width="700" src="figs/VAE4Spins_pipeline_github.png">
 
 # Getting Started
 
-To begin using the library, we recommend starting with the
-[tutorials](nbs/tutorials) notebooks. These tutorials provide a
-step-by-step introduction to the core tools and workflows, using a
-simple toy example: the $J_1$–$J_2$ model on a square lattice.
+To begin using the library, we recommend starting with the [tutorial
+notebooks](nbs/tutorials). We cover the two pillars of the `Qdisc`
+pipeline:
 
-Additional [examples](nbs/examples) notebooks are also available and
-cover a variety of quantum data types, including: - Measurement
-snapshots of Rydberg atom systems - Classical shadows of the cluster
-Ising model - Hybrid data from a fermionic system
+1.  Using variational autoencoders to extract interpretable
+    representations ([link](nbs/tutorial/J1J2_tuto1_VAE.ipynb))
+2.  Finding closed forms for order paramters via symbolic regression
+    ([link](nbs/tutorial/J1J2_tuto1_SR.ipynb))
 
-These examples reproduce the results presented in the accompanying paper
-(TODO: add reference).
+Additional [example notebooks](nbs/examples) are used to illustrate
+specific applications, as those covered in the [manuscript (TODO)]():
+
+1.  Measurement snapshots of Rydberg atom systems (**this one is not
+    useful because users don’t have the data!**)
+2.  Classical shadows of the cluster Ising model
+    ([link](nbs/tutorial/qdisc_ClusterIsing.ipynb))
+3.  Hybrid data from a fermionic system (**missing?**)
 
 ## Usage
 

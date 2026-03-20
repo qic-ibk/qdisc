@@ -69,7 +69,8 @@ illustrate specific applications, as those covered in the [manuscript
     The experimental data are not provided.
 2.  Classical shadows of the cluster Ising model
     ([link](https://PaulinDS.github.io/qdisc/nbs/examples/qdisc_ClusterIsing.ipynb))
-3.  Hybrid data from a fermionic system (**TODO add**)
+3.  Hybrid data from a fermionic system
+    ([link](https://PaulinDS.github.io/qdisc/nbs/examples/qdisc_FKM.ipynb))
 
 ## Usage
 

@@ -413,7 +413,7 @@ class VAETrainer:
 
 
 
-    def plot_repr2d(self, latvar: Optional[dict] = None, theta_pair: tuple = (1,0)):
+    def plot_repr2d(self, latvar: Optional[dict] = None, theta_pair: tuple = (1,0), subplot: bool = True):
         """ plot mu, abs(mu), logvar accross the parameter space (2d)"""
 
         if latvar is None:
@@ -428,58 +428,100 @@ class VAETrainer:
         theta2 = thetas[theta_pair[1]]
         fig_shape = (5,5)
 
-        for i in range(latent_dim):
+        if subplot == True:
 
             plt.rcParams['font.size'] = 16
-            plt.figure(figsize=fig_shape,dpi=100)
-
-            plt.imshow(jnp.flipud(latvar['mu{}'.format(i)]),cmap=cmap_blue, aspect='auto')
-
-            cbar = plt.colorbar(orientation="horizontal", pad=0.03, location="top")
-            cbar.set_label(r'$\mu_{}$'.format(i+1), fontsize=20, labelpad=10)
-
-            plt.ylabel(r'$\theta_{}$'.format(theta_pair[0]))
-            plt.xlabel(r'$\theta_{}$'.format(theta_pair[1]))
-            plt.yticks([i for i in range(0,len(theta1),len(theta1)//4)], [str(theta1[len(theta1)-i])[:4] for i in range(0,len(theta1),len(theta1)//4)])
-            plt.xticks([i for i in range(0,len(theta2),len(theta2)//4)], [str(theta2[i])[:4] for i in range(0,len(theta2),len(theta2)//4)])
+            fig, axes = plt.subplots(latent_dim, 3, figsize=(9, 4*latent_dim), gridspec_kw={'wspace': 0.075, 'hspace': 0.5})
+            
+            for i, ax in enumerate(axes):
+              ax1 = ax[0]
+              ax2 = ax[1]
+              ax3 = ax[2]
+            
+              im1 = ax1.imshow(jnp.flipud(latvar['mu{}'.format(i)]),cmap=cmap_blue,aspect='auto')
+            
+              cbar = fig.colorbar(im1, ax=ax1, orientation="horizontal", pad=0.03, location="top")
+              cbar.set_label(r'$\mu_{}$'.format(i+1), fontsize=20, labelpad=10)
+              ax1.set_ylabel(r'$\theta_{}$'.format(theta_pair[0]))
+              ax1.set_xlabel(r'$\theta_{}$'.format(theta_pair[1]))
+              ax1.set_yticks([i for i in range(0,len(theta1),len(theta1)//4)], [str(theta1[len(theta1)-i])[:4] for i in range(0,len(theta1),len(theta1)//4)])
+              ax1.set_xticks([i for i in range(0,len(theta2),len(theta2)//4)], [str(theta2[i])[:4] for i in range(0,len(theta2),len(theta2)//4)])
+            
+              im2 = ax2.imshow(jnp.flipud(latvar['mu{}_abs'.format(i)]),cmap=cmap_blue,aspect='auto')
+            
+              cbar = fig.colorbar(im2, ax=ax2, orientation="horizontal", pad=0.03, location="top")
+              cbar.set_label(r'$|\mu_{}|$'.format(i+1), fontsize=20, labelpad=10)
+              ax2.set_xlabel(r'$\theta_{}$'.format(theta_pair[1]))
+              ax2.set_yticks([i for i in range(0,len(theta1),len(theta1)//4)], ['' for i in range(0,len(theta1),len(theta1)//4)])
+              ax2.set_xticks([i for i in range(0,len(theta2),len(theta2)//4)], [str(theta2[i])[:4] for i in range(0,len(theta2),len(theta2)//4)])
+            
+              im3 = ax3.imshow(jnp.flipud(latvar['logvar{}'.format(i)]),cmap=cmap_blue,aspect='auto')
+            
+              cbar = fig.colorbar(im3, ax=ax3, orientation="horizontal", pad=0.03, location="top")
+              cbar.set_label(r'$\log(\sigma^2_{})$'.format(i+1), fontsize=20, labelpad=10)
+              ax3.set_xlabel(r'$\theta_{}$'.format(theta_pair[1]))
+              ax3.set_yticks([i for i in range(0,len(theta1),len(theta1)//4)], ['' for i in range(0,len(theta1),len(theta1)//4)])
+              ax3.set_xticks([i for i in range(0,len(theta2),len(theta2)//4)], [str(theta2[i])[:4] for i in range(0,len(theta2),len(theta2)//4)])
+            
+                                                                                                                                              
+                                                                                                                                    
             plt.show()
 
+        else:
 
-            plt.rcParams['font.size'] = 16
-            plt.figure(figsize=fig_shape,dpi=100)
+            for i in range(latent_dim):
+    
+                plt.rcParams['font.size'] = 16
+                plt.figure(figsize=fig_shape,dpi=100)
+    
+                plt.imshow(jnp.flipud(latvar['mu{}'.format(i)]),cmap=cmap_blue, aspect='auto')
+    
+                cbar = plt.colorbar(orientation="horizontal", pad=0.03, location="top")
+                cbar.set_label(r'$\mu_{}$'.format(i+1), fontsize=20, labelpad=10)
+    
+                plt.ylabel(r'$\theta_{}$'.format(theta_pair[0]))
+                plt.xlabel(r'$\theta_{}$'.format(theta_pair[1]))
+                plt.yticks([i for i in range(0,len(theta1),len(theta1)//4)], [str(theta1[len(theta1)-i])[:4] for i in range(0,len(theta1),len(theta1)//4)])
+                plt.xticks([i for i in range(0,len(theta2),len(theta2)//4)], [str(theta2[i])[:4] for i in range(0,len(theta2),len(theta2)//4)])
+                plt.show()
+    
+    
+                plt.rcParams['font.size'] = 16
+                plt.figure(figsize=fig_shape,dpi=100)
+    
+                plt.imshow(jnp.flipud(latvar['mu{}_abs'.format(i)]),cmap=cmap_blue, aspect='auto')
+    
+                cbar = plt.colorbar(orientation="horizontal", pad=0.03, location="top")
+                cbar.set_label(r'$|\mu_{}|$'.format(i+1), fontsize=20, labelpad=10)
+    
+                plt.ylabel(r'$\theta_{}$'.format(theta_pair[0]))
+                plt.xlabel(r'$\theta_{}$'.format(theta_pair[1]))
+                plt.yticks([i for i in range(0,len(theta1),len(theta1)//4)], [str(theta1[len(theta1)-i])[:4] for i in range(0,len(theta1),len(theta1)//4)])
+                plt.xticks([i for i in range(0,len(theta2),len(theta2)//4)], [str(theta2[i])[:4] for i in range(0,len(theta2),len(theta2)//4)])
+                plt.show()
+    
+    
+                plt.rcParams['font.size'] = 16
+                plt.figure(figsize=fig_shape,dpi=100)
+    
+                plt.imshow(jnp.flipud(latvar['logvar{}'.format(i)]),cmap=cmap_blue, aspect='auto')
+    
+                cbar = plt.colorbar(orientation="horizontal", pad=0.03, location="top")
+                cbar.set_label(r'$\log\sigma_{}$'.format(i+1), fontsize=20, labelpad=10)
+    
+                plt.ylabel(r'$\theta_{}$'.format(theta_pair[0]))
+                plt.xlabel(r'$\theta_{}$'.format(theta_pair[1]))
+                plt.yticks([i for i in range(0,len(theta1),len(theta1)//4)], [str(theta1[len(theta1)-i])[:4] for i in range(0,len(theta1),len(theta1)//4)])
+                plt.xticks([i for i in range(0,len(theta2),len(theta2)//4)], [str(theta2[i])[:4] for i in range(0,len(theta2),len(theta2)//4)])
+                plt.show()
 
-            plt.imshow(jnp.flipud(latvar['mu{}_abs'.format(i)]),cmap=cmap_blue, aspect='auto')
-
-            cbar = plt.colorbar(orientation="horizontal", pad=0.03, location="top")
-            cbar.set_label(r'$|\mu_{}|$'.format(i+1), fontsize=20, labelpad=10)
-
-            plt.ylabel(r'$\theta_{}$'.format(theta_pair[0]))
-            plt.xlabel(r'$\theta_{}$'.format(theta_pair[1]))
-            plt.yticks([i for i in range(0,len(theta1),len(theta1)//4)], [str(theta1[len(theta1)-i])[:4] for i in range(0,len(theta1),len(theta1)//4)])
-            plt.xticks([i for i in range(0,len(theta2),len(theta2)//4)], [str(theta2[i])[:4] for i in range(0,len(theta2),len(theta2)//4)])
-            plt.show()
 
 
-            plt.rcParams['font.size'] = 16
-            plt.figure(figsize=fig_shape,dpi=100)
-
-            plt.imshow(jnp.flipud(latvar['logvar{}'.format(i)]),cmap=cmap_blue, aspect='auto')
-
-            cbar = plt.colorbar(orientation="horizontal", pad=0.03, location="top")
-            cbar.set_label(r'$\log\sigma_{}$'.format(i+1), fontsize=20, labelpad=10)
-
-            plt.ylabel(r'$\theta_{}$'.format(theta_pair[0]))
-            plt.xlabel(r'$\theta_{}$'.format(theta_pair[1]))
-            plt.yticks([i for i in range(0,len(theta1),len(theta1)//4)], [str(theta1[len(theta1)-i])[:4] for i in range(0,len(theta1),len(theta1)//4)])
-            plt.xticks([i for i in range(0,len(theta2),len(theta2)//4)], [str(theta2[i])[:4] for i in range(0,len(theta2),len(theta2)//4)])
-            plt.show()
-
-
-
-    def compute_and_plot_repr2d(self, theta_pair: tuple = (1,0), values_other_thetas: tuple = ()):#, fig_shape: Optional[tuple] = None):
+    def compute_and_plot_repr2d(self, theta_pair: tuple = (1,0), values_other_thetas: tuple = (), subplot: bool = True):
         """ compute and plot mu, abs(mu), logvar accross the parameter space (2d)"""
         self.compute_repr2d(theta_pair=theta_pair)
-        self.plot_repr2d(theta_pair=theta_pair)
+        self.plot_repr2d(theta_pair=theta_pair, subplot=subplot)
+
 
 
     def plot_training(self, num_epochs: int):

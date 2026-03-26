@@ -281,7 +281,7 @@ class SymbolicRegression:
         Wrapper with the SR methods to be used on top of the representation learned by the cpVAE for quantum
 
         Args:
-        
+
             dataset: Dataset object
             cluster_idx_in: coord. specifying the location of the cluster we analyse in parameter (theta) space
             objective: SR1, SR2 or SR3
@@ -289,9 +289,9 @@ class SymbolicRegression:
             search_space: 2_body_correlator or genetic
             add_constant: if True, add a constant term to the model
             shift_data: if the symbolic function takes direcly the dataset.data or if {0,1}->{-1,1} before
-         
+
          for SR2,3 also need:
-         
+
             VAE_model: the VAE model
             VAE_params: its params
             mu_cluster: the value of the latent variable accrooss theta space where the cluster appear (for now, only one mu)
@@ -460,10 +460,14 @@ class SymbolicRegression:
     ## 2BC ##
 
 
-    def train_2BC(self, key: jax.random.PRNGKey, dataset_size: int = 2000, L1_reg: float = 0., print_min_results: bool = True) -> object:
+    def train_2BC(self, key: jax.random.PRNGKey, dataset_size: int = 2000, L1_reg: float = 0., print_min_results: bool = True, max_iter: int = 500) -> object:
         """Train the 2 body correlator (2BC) ansatz on the  various SR objectives"""
 
-        model = TwoBodyModel(self.pairs, key, add_constant=self.add_constant)
+        if self.model == None:
+            model = TwoBodyModel(self.pairs, key, add_constant=self.add_constant)
+        else:
+            model = self.model
+
         alpha0 = model.alpha.copy()
 
         if self.dataset_SR == None:
@@ -489,7 +493,7 @@ class SymbolicRegression:
             alpha0,
             args=(model, *dataset_SR, L1_reg, options),
             method="L-BFGS-B",
-            options={"maxiter": 500}
+            options={"maxiter": max_iter}
         )
 
         print('### Training finished ###')
@@ -522,6 +526,19 @@ class SymbolicRegression:
 
         raise ValueError(f"Objective {self.objective} not supported")
 
+    def shift_data_fn(self, X):
+        ''' shift the data '''
+        if self.data_type != 'hybrid':
+          X_shift = X*2-1
+        else:
+          X_shift = jnp.zeros_like(X)
+          N = self.dataset.data.shape[-1]//2
+          X_shift = X_shift.at[:,:N].set(X[:,:N]*2-1)
+          X_shift = X_shift.at[:,N:].set(X[:,N:]-0.5)
+
+        return X_shift
+
+
 
 
 
@@ -541,7 +558,8 @@ class SymbolicRegression:
 
         X = jnp.concatenate((x_in_cluster,x_out_cluster), axis=0)
         if self.shift_data:
-          X = X*2-1
+          X = self.shift_data_fn(X)
+
         Y = jnp.concatenate((y_in_cluster,y_out_cluster), axis=0)
 
         return (X, Y)
@@ -591,7 +609,7 @@ class SymbolicRegression:
         #reshape back (no need in fact)
         #grads_mu_wrt_x = grads_flat#.reshape(B1, B2, *spatial)
         if self.shift_data:
-          x_flat = x_flat*2-1
+          x_flat = self.shift_data_fn(x_flat)
 
 
         return (x_flat, grads_flat)
@@ -766,8 +784,7 @@ class SymbolicRegression:
         G = jnp.tile(grads_mu_wrt_theta_boundaries[:,None,:], reps=(1,jnp.shape(self.dataset.data)[2],1)).reshape(-1,len(self.dataset.thetas))
         X = x_boundaries.reshape(-1,self.dataset.data.shape[-1])
         if self.shift_data:
-          X = X*2-1
-
+          X = self.shift_data_fn(X)
 
         return (X, vk_cp, G)
 
@@ -800,7 +817,7 @@ class SymbolicRegression:
         weighted_sums_thetaf = []
         theta1 = self.dataset.thetas[0]
         theta2 = self.dataset.thetas[1]
-        
+
 
         for point, grad in zip(id_boundaries, grads_mu_wrt_theta_boundaries):
             n1, n2 = get_direction_neighbors(point, grad)
@@ -852,7 +869,7 @@ class SymbolicRegression:
         G = jnp.tile(grads_mu_wrt_theta_boundaries[:,None,:], reps=(1,jnp.shape(self.dataset.data)[2],1)).reshape(-1,len(self.dataset.thetas))
         X = x_boundaries.reshape(-1,self.dataset.data.shape[-1])
         if self.shift_data:
-          X = X*2-1
+          X = self.shift_data_fn(X)
 
 
         return (X, vk_delta, G)
@@ -925,7 +942,7 @@ class SymbolicRegression:
         plt.show()
 
 
-    def compute_and_plot_prediction(self, theta_pair: tuple=(1,0), values_other_thetas: tuple = (), name: str = '', class_pred: bool=False) -> jnp.ndarray:
+    def compute_and_plot_prediction(self, theta_pair: tuple=(1,0), values_other_thetas: tuple = (), name: str = '', class_pred: bool=False, fig_shape: tuple = (3,3)) -> jnp.ndarray:
         """compute and plot f(x) on the parameter space"""
 
         if self.search_space != '2_body_correlator':
@@ -955,7 +972,7 @@ class SymbolicRegression:
                   c += 1
               d = self.dataset.data[tuple(location)]
               if self.shift_data:
-                d = d*2-1
+                d = self.shift_data_fn(d)
               predictions = predictions.at[i,j].set(jnp.mean(model_predic_jit(d)))
             #return predictions
 
@@ -969,8 +986,13 @@ class SymbolicRegression:
           predictions = (predictions>0)*1
 
 
+
+        thetas = self.dataset.thetas
+        theta1 = thetas[theta_pair[0]]
+        theta2 = thetas[theta_pair[1]]
+
         plt.rcParams['font.size'] = 16
-        plt.figure(figsize=(3,3),dpi=100)
+        plt.figure(figsize=fig_shape,dpi=100)
 
 
         plt.imshow(jnp.flipud(predictions), cmap=self.cmap, aspect='auto')#,vmin=0.3)
@@ -978,20 +1000,17 @@ class SymbolicRegression:
         cbar = plt.colorbar(orientation="horizontal", pad=0.03, location="top")
         cbar.set_label(r'pred. {}'.format(name), fontsize=20, labelpad=10)
 
-        plt.ylabel(r'$h$')
-        plt.xlabel(r'$J_2$')
 
-        y_tick_positions = [0,10,19]  # Positions for the ticks
-        y_tick_labels = ['2', '1', '0.1']  # Labels for the ticks
-        plt.yticks(y_tick_positions, y_tick_labels)
-
-        x_tick_positions = [0, 10, 20]  # Positions for the ticks
-        x_tick_labels = ['0', '0.75', '1.5']  # Labels for the ticks
-        plt.xticks(x_tick_positions, x_tick_labels)
-
+        plt.ylabel(r'$\theta_{}$'.format(theta_pair[0]))
+        plt.xlabel(r'$\theta_{}$'.format(theta_pair[1]))
+        plt.yticks([i for i in range(0,len(theta1),len(theta1)//4)], [str(theta1[len(theta1)-i])[:4] for i in range(0,len(theta1),len(theta1)//4)])
+        plt.xticks([i for i in range(0,len(theta2),len(theta2)//4)], [str(theta2[i])[:4] for i in range(0,len(theta2),len(theta2)//4)])
         plt.show()
 
         return predictions
+
+
+
 
 
 

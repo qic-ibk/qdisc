@@ -6,6 +6,7 @@ website:
         contents:
           - examples/index_examples.ipynb
           - examples/qdisc_ClusterIsing.ipynb
+          - examples/qdisc_FKM.ipynb
           - examples/qdisc_Rydberg.ipynb
       - section: lib_nbs
         contents:

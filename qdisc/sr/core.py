@@ -460,7 +460,7 @@ class SymbolicRegression:
     ## 2BC ##
 
 
-    def train_2BC(self, key: jax.random.PRNGKey, dataset_size: int = 2000, L1_reg: float = 0., print_min_results: bool = True, max_iter: int = 500) -> object:
+    def train_2BC(self, key: jax.random.PRNGKey, dataset_size: int = 2000, L1_reg: float = 0., print_info: bool = True, max_iter: int = 500) -> object:
         """Train the 2 body correlator (2BC) ansatz on the  various SR objectives"""
 
         if self.model == None:
@@ -471,14 +471,17 @@ class SymbolicRegression:
         alpha0 = model.alpha.copy()
 
         if self.dataset_SR == None:
-          print('### Start preparing the dataset ###')
+          if print_info:
+              print('### Start preparing the dataset ###')
           dataset_SR = self.prepare_dataset(key, dataset_size=dataset_size)
-          print('### Dataset prepared, start the trainnig ###')
+          if print_info:
+              print('### Dataset prepared, start the trainnig ###')
           self.dataset_SR = dataset_SR
 
         else:
           dataset_SR = self.dataset_SR
-          print('### Dataset already prepared, start the trainnig ###')
+          if print_info:
+              print('### Dataset already prepared, start the trainnig ###')
         options = {}
 
         if self.objective == "SR1":
@@ -495,10 +498,8 @@ class SymbolicRegression:
             method="L-BFGS-B",
             options={"maxiter": max_iter}
         )
-
-        print('### Training finished ###')
-
-        if print_min_results:
+        if print_info:
+            print('### Training finished ###')
             print(res)
 
         model.alpha = res.x
@@ -942,9 +943,8 @@ class SymbolicRegression:
         plt.show()
 
 
-    def compute_and_plot_prediction(self, theta_pair: tuple=(1,0), values_other_thetas: tuple = (), name: str = '', class_pred: bool=False, fig_shape: tuple = (3,3)) -> jnp.ndarray:
-        """compute and plot f(x) on the parameter space"""
-
+    def compute_prediction(self, theta_pair: tuple=(1,0), values_other_thetas: tuple = ()) -> jnp.ndarray:
+        """compute f(x) on the parameter space"""
         if self.search_space != '2_body_correlator':
           raise ValueError("Only implemented for 2_body_correlator at the moment")
 
@@ -953,9 +953,7 @@ class SymbolicRegression:
         theta2 = self.dataset.thetas[theta_pair[1]]
         shape_thetas = (len(theta1),len(theta2))
 
-        #def compute_prediction(alpha,X):
         predictions = jnp.zeros(shape_thetas)
-        #model.alpha = alpha
         model_predic_jit = jax.jit(model.predict)
         for i in range(jnp.size(theta1)):
           for j in range(jnp.size(theta2)):
@@ -974,11 +972,14 @@ class SymbolicRegression:
               if self.shift_data:
                 d = self.shift_data_fn(d)
               predictions = predictions.at[i,j].set(jnp.mean(model_predic_jit(d)))
-            #return predictions
+        return predictions
 
 
-        #compute_prediction_vmap = jax.jit(jax.vmap(compute_prediction, in_axes=(0,None)))
-        #all_predictions = compute_prediction_vmap(model.alpha, dataset.data)
+    def compute_and_plot_prediction(self, theta_pair: tuple=(1,0), values_other_thetas: tuple = (), name: str = '', class_pred: bool=False, fig_shape: tuple = (3,3)) -> jnp.ndarray:
+        """compute and plot f(x) on the parameter space"""
+
+
+        predictions = self.compute_prediction(theta_pair, values_other_thetas)
 
         if class_pred==True:
           if self.objective != 'SR1':

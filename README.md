@@ -47,7 +47,7 @@ different identified regimes.
 
 <img width="700" src="figs/VAE4Spins_pipeline_github.png">
 
-# getting started
+# Getting Started
 
 To begin using the library, we recommend starting with the [tutorial
 notebooks](https://PaulinDS.github.io/qdisc/nbs/tutorials). We cover the
@@ -62,16 +62,14 @@ two pillars of the `Qdisc` pipeline:
 Additional [example
 notebooks](https://PaulinDS.github.io/qdisc/nbs/examples) are used to
 illustrate specific applications, as those covered in the [manuscript
-(TODO)]():
+(TODO)](). For these examples, the quantum data are not provided:
 
 1.  Measurement snapshots of Rydberg atom systems
     ([link](https://PaulinDS.github.io/qdisc/nbs/examples/qdisc_Rydberg.ipynb)).
-    The experimental data are not provided.
 2.  Classical shadows of the cluster Ising model
-    ([link](https://PaulinDS.github.io/qdisc/nbs/examples/qdisc_ClusterIsing.ipynb))
+    ([link](https://PaulinDS.github.io/qdisc/nbs/examples/qdisc_ClusterIsing.ipynb)).
 3.  Hybrid data from a fermionic system
     ([link](https://PaulinDS.github.io/qdisc/nbs/examples/qdisc_FKM.ipynb)).
-    The simulated data are not provided.
 
 ## Usage
 
@@ -90,7 +88,7 @@ or from [pypi](https://pypi.org/project/qdisc/)
 $ pip install qdisc
 ```
 
-### documentation
+### Documentation
 
 Documentation can be found hosted on this GitHub
 [repository](https://github.com/PaulinDS/qdisc)’s
@@ -99,7 +97,7 @@ package manager specific guidelines on
 [conda](https://anaconda.org/PaulinDS/qdisc) and
 [pypi](https://pypi.org/project/qdisc/) respectively.
 
-## citing
+## Citing
 
 If you find the librairy usefull in your projects, please cite the
 accompanying [paper](paper):

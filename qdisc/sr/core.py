@@ -347,6 +347,7 @@ class SymbolicRegression:
                 ) from e
             else:
                 print("PySRRegressor imported")
+                import sympy as sp
 
         self.search_space = search_space
 
@@ -398,6 +399,7 @@ class SymbolicRegression:
                   random_state: int = 2575,     # seed for reproductibility
                   niterations: int = 200,       # Number of iterations to search
                   binary_operators: list = ["+", "*", "-"],  # Allowed binary operations
+                  unary_operators: list = [], # Other allowed operations
                   elementwise_loss: str = "loss(x,y) = -y*log(1/(1+exp(-x)))-(1-y)*log(1-1/(1+exp(-x)))",  # sigmoid loss for SR1
                   maxsize: int = 20,            # max complexity of the equations
                   progress: bool = True,         # Show progress during training
@@ -436,9 +438,11 @@ class SymbolicRegression:
         all_perf = []
         all_eqs = []
         all_terms = []
+        import sympy as sp
+        
         for i in range(len(model.equations_['equation'])):
           all_predictions = (model.predict(X,i)>0.)*1
-          perf = jnp.mean(Y == all_predictions)
+          perf = jnp.mean(Y == all_predictions) 
           equation_sympy = sp.sympify(model.equations_['equation'][i]).expand()
           terms = list(equation_sympy.as_coefficients_dict().keys())
 

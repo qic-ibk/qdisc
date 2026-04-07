@@ -169,8 +169,6 @@ def TC_term(mean: jnp.ndarray, logvar: jnp.ndarray, z: jnp.ndarray) -> jnp.ndarr
     return tc_loss
 
 
-show_doc(VAEmodel, name='VAEmodel')
-
 # %% ../../nbs/lib_nbs/vae/01_core.ipynb #23624deb
 class VAETrainer:
     """
@@ -654,6 +652,3 @@ class VAETrainer:
 
       return cp
 
-
-
-show_doc(VAETrainer, name='VAETrainer')

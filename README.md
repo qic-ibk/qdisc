@@ -5,7 +5,7 @@
 
 <p align="center">
 
-<img width="250" src="figs/VAE4Spins_logo.png">
+<img width="250" src="nbs/figs/VAE4Spins_logo.png">
 </p>
 
 <h3 align="center">
@@ -45,7 +45,7 @@ different identified regimes.
 
 <p align="center">
 
-<img width="700" src="figs/VAE4Spins_pipeline_github.png">
+<img width="700" src="nbs/figs/VAE4Spins_pipeline_github.png">
 
 # Getting Started
 

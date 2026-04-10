@@ -34,8 +34,8 @@ cuda11 = [
 
 
 [project.urls]
-Repository = "https://github.com/PaulinDS/qdisc"
-Documentation = "https://PaulinDS.github.io/qdisc/"
+Repository = "https://github.com/qic-ibk/qdisc"
+Documentation = "https://qic-ibk.github.io/qdisc/"
 
 [project.entry-points.nbdev]
 qdisc = "qdisc._modidx:d"

@@ -1,5 +1,8 @@
 project:
   type: website
+  output-dir: _docs
+  preview:
+    port: 4200
 
 format:
   html:
@@ -10,13 +13,22 @@ format:
   commonmark: default
 
 website:
+  title: "QDisc"
+  site-url: "https://qic-ibk.github.io/qdisc/"
+  description: ""
+  repo-branch: main
+  repo-url: "https://github.com/qic-ibk/qdisc"
   twitter-card: true
   open-graph: true
   repo-actions: [issue]
-  navbar:
-    background: primary
-    search: true
+  navbar:      
+    logo: figs/qdisc_logo.png
+    background: "#f0f0f0ff"
+    search: true      
+    right:
+      - icon: github
+        href: "https://github.com/qic-ibk/qdisc" 
   sidebar:
     style: floating
 
-metadata-files: [nbdev.yml, sidebar.yml]
+metadata-files: [sidebar.yml]

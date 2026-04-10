@@ -3,7 +3,7 @@ project:
 
 website:
   title: "qdisc"
-  site-url: "https://PaulinDS.github.io/qdisc"
+  site-url: "https://qic-ibk.github.io/qdisc"
   description: ""
   repo-branch: main
-  repo-url: "https://github.com/PaulinDS/qdisc"
+  repo-url: "https://github.com/qic-ibk/qdisc"

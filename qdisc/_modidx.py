@@ -2,8 +2,8 @@
 
 d = { 'settings': { 'branch': 'main',
                 'doc_baseurl': '/qdisc',
-                'doc_host': 'https://PaulinDS.github.io',
-                'git_url': 'https://github.com/PaulinDS/qdisc',
+                'doc_host': 'https://qic-ibk.github.io',
+                'git_url': 'https://github.com/qic-ibk/qdisc',
                 'lib_path': 'qdisc'},
   'syms': { 'qdisc.clustering.core': { 'qdisc.clustering.core.GaussianMixture': ( 'lib_nbs/clustering/core.html#gaussianmixture',
                                                                                   'qdisc/clustering/core.py'),

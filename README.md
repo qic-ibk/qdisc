@@ -5,11 +5,7 @@
 
 <p align="center">
 
-<<<<<<< HEAD
 <img width="250" src="nbs/figs/qdisc_logo.png">
-=======
-<img width="250" src="figs/qdisc_logo.png">
->>>>>>> 65ac060 (improved the doc)
 </p>
 
 <h3 align="center">

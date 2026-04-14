@@ -5,7 +5,7 @@
 
 <p align="center">
 
-<img width="250" src="nbs/figs/VAE4Spins_logo.png">
+<img width="250" src="nbs/figs/qdisc_logo.png">
 </p>
 
 <h3 align="center">

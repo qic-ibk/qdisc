@@ -30,5 +30,25 @@ website:
         href: "https://github.com/qic-ibk/qdisc" 
   sidebar:
     style: floating
+    collapse-level: 1
+    contents:
+      - text: Get started
+        href: index.ipynb
+      - section: Examples
+        contents:
+          - examples/index_examples.ipynb
+          - examples/qdisc_ClusterIsing.ipynb
+          - examples/qdisc_FKM.ipynb
+      - section: Documentation
+        contents:
+          - lib_nbs/index_docs.ipynb
+          - lib_nbs/clustering/01_core.ipynb
+          - lib_nbs/dataset/01_core.ipynb
+          - lib_nbs/nn/01_core.ipynb
+          - lib_nbs/sr/01_core.ipynb
+          - lib_nbs/vae/01_core.ipynb
+      - section: Tutorials
+        contents:
+          - tutorials/J1J2_tuto1_VAE.ipynb
+          - tutorials/J1J2_tuto2_SR.ipynb
 
-metadata-files: [sidebar.yml]

@@ -79,7 +79,7 @@ Install latest from the GitHub
 [repository](https://github.com/qic-ibk/qdisc):
 
 ``` sh
-$ pip install git+https://github.com/PaulinDS/qdisc.git
+$ pip install git+https://github.com/qic-ibk/qdisc.git
 ```
 
 ### Documentation

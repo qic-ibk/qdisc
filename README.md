@@ -5,7 +5,7 @@
 
 <p align="center">
 
-<img width="250" src="nbs/figs/qdisc_logo.png">
+<img width="250" src="figs/qdisc_logo.png">
 </p>
 
 <h3 align="center">
@@ -44,7 +44,7 @@ different identified regimes.
 
 <p align="center">
 
-<img width="700" src="nbs/figs/VAE4Spins_pipeline_github.png">
+<img width="700" src="figs/VAE4Spins_pipeline_github.png">
 
 ## Getting Started
 
@@ -85,7 +85,7 @@ $ pip install git+https://github.com/PaulinDS/qdisc.git
 ### Documentation
 
 The library comprises three core modules. First, `qdisc.Dataset` enables
-to handle and preprocess their data efficiently. Next, `qdisc.vae`
+to handle and preprocess the data efficiently. Next, `qdisc.vae`
 provides tools to construct, customize, and train variational
 autoencoders (VAEs), including predefined architectures and high-level
 training modules. Finally, `qdisc.sr` allows to train symbolic

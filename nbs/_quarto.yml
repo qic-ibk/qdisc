@@ -23,7 +23,8 @@ website:
   repo-actions: [issue]
   navbar:      
     logo: figs/qdisc_logo.png
-    background: "#f0f0f0ff"
+    background: "#1a2235"
+    foreground: "#ffffff"
     search: true      
     right:
       - icon: github

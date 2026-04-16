@@ -18,15 +18,19 @@ Discovery</em>
 
 <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python >=3.11">
 <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
+<a href="https://qic-ibk.github.io/qdisc/">
 <img src="https://img.shields.io/badge/docs-online-blue">
+<a href="https://doi.org/10.5281/zenodo.19607943">
+<img src="https://zenodo.org/badge/1159286067.svg" alt="DOI"> </a>
+
 </p>
 
 <p align="center">
 
 <a href="https://qic-ibk.github.io/qdisc/">Get started</a> \|
-<a href="https://qic-ibk.github.io/qdisc/nbs/lib_nbs/index_docs.html">Documentation</a>
+<a href="https://qic-ibk.github.io/qdisc/lib_nbs/index_docs.html">Documentation</a>
 \|
-<a href="https://qic-ibk.github.io/qdisc/nbs/tutorials/J1J2_tuto1_vae.html">Tutorials</a>
+<a href="https://qic-ibk.github.io/qdisc/tutorials/j1j2_tuto1_vae.html">Tutorials</a>
 </p>
 
 `QDisc` is a library for discovering quantum phenomena from raw quantum
@@ -49,14 +53,14 @@ different identified regimes.
 ## Getting Started
 
 To begin using the library, we recommend starting with the [tutorial
-notebooks](https://qic-ibk.github.io/qdisc/tutorials/J1J2_tuto1_vae.html).
+notebooks](https://qic-ibk.github.io/qdisc/tutorials/j1j2_tuto1_vae.html).
 We cover the two pillars of the `Qdisc` pipeline:
 
 1.  Using variational autoencoders to extract interpretable
     representations
-    ([link](https://qic-ibk.github.io/qdisc/tutorials/J1J2_tuto1_VAE.ipynb))
+    ([link](https://qic-ibk.github.io/qdisc/tutorials/j1j2_tuto1_vae.html))
 2.  Finding closed forms for order paramters via symbolic regression
-    ([link](https://qic-ibk.github.io/qdisc/tutorials/J1J2_tuto2_SR.ipynb))
+    ([link](https://qic-ibk.github.io/qdisc/tutorials/j1j2_tuto2_sr.html))
 
 Additional [example
 notebooks](https://qic-ibk.github.io/qdisc/examples/index_examples.html)
@@ -65,11 +69,11 @@ are used to illustrate specific applications, as those covered in the
 provided:
 
 1.  Measurement snapshots of Rydberg atom systems
-    ([link](https://qic-ibk.github.io/qdisc/examples/qdisc_Rydberg.html)).
+    ([link](https://qic-ibk.github.io/qdisc/examples/qdisc_rydberg.html)).
 2.  Classical shadows of the cluster Ising model
     ([link](https://qic-ibk.github.io/qdisc/examples/qdisc_clusterising.html)).
 3.  Hybrid data from a fermionic system
-    ([link](https://qic-ibk.github.io/qdisc/examples/qdisc_FKM.html)).
+    ([link](https://qic-ibk.github.io/qdisc/examples/qdisc_fkm.html)).
 
 ## Usage
 

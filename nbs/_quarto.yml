@@ -38,6 +38,7 @@ website:
       - section: Examples
         contents:
           - examples/index_examples.ipynb
+          - examples/qdisc_Rydberg.ipynb
           - examples/qdisc_ClusterIsing.ipynb
           - examples/qdisc_FKM.ipynb
       - section: Documentation

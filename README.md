@@ -49,7 +49,7 @@ different identified regimes.
 
 <p align="center">
 
-<img width="700" src="nbsfigs/VAE4Spins_pipeline_github.png">
+<img width="700" src="nbs/figs/VAE4Spins_pipeline_github.png">
 
 ## Getting Started
 

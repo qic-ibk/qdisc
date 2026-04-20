@@ -1,0 +1,2163 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Rydberg atoms – QDisc</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-7d0f2692033adbfcebf02552a4d09f1a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Rydberg atoms – QDisc">
+<meta property="og:description" content="">
+<meta property="og:image" content="https://qic-ibk.github.io/qdisc/examples/qdisc_Rydberg_files/figure-html/cell-7-output-1.png">
+<meta property="og:site_name" content="QDisc">
+<meta property="og:image:height" content="383">
+<meta property="og:image:width" content="527">
+<meta name="twitter:title" content="Rydberg atoms – QDisc">
+<meta name="twitter:description" content="">
+<meta name="twitter:image" content="https://qic-ibk.github.io/qdisc/examples/qdisc_Rydberg_files/figure-html/cell-7-output-1.png">
+<meta name="twitter:image-height" content="383">
+<meta name="twitter:image-width" content="527">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../figs/qdisc_logo.png" alt="" class="navbar-logo light-content">
+    <img src="../figs/qdisc_logo.png" alt="" class="navbar-logo dark-content">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">QDisc</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/qic-ibk/qdisc"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../examples/index_examples.html">Examples</a></li><li class="breadcrumb-item"><a href="../examples/qdisc_rydberg.html">Rydberg atoms</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Get started</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Examples</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/index_examples.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Readme</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/qdisc_rydberg.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Rydberg atoms</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/qdisc_clusterising.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cluster Ising model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/qdisc_fkm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Falinov-Kimbal model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">Documentation</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/index_docs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Readme</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/clustering/core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/dataset/core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Dataset</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/nn/core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural networks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/sr/core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Symbolic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/vae/core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">VAE</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">Tutorials</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/j1j2_tuto1_vae.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Training VAEs on quantum data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/j1j2_tuto2_sr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Extracting order parameters with SR</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#dataset-and-training" id="toc-dataset-and-training" class="nav-link active" data-scroll-target="#dataset-and-training">dataset and training</a></li>
+  <li><a href="#exploring-conditional-probabilities-with-the-decoder" id="toc-exploring-conditional-probabilities-with-the-decoder" class="nav-link" data-scroll-target="#exploring-conditional-probabilities-with-the-decoder">Exploring conditional probabilities with the decoder</a></li>
+  <li><a href="#symbolic-regression" id="toc-symbolic-regression" class="nav-link" data-scroll-target="#symbolic-regression">Symbolic regression</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/qic-ibk/qdisc/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="qdisc_rydberg.html.md"><i class="bi bi-file-code"></i>CommonMark</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../examples/index_examples.html">Examples</a></li><li class="breadcrumb-item"><a href="../examples/qdisc_rydberg.html">Rydberg atoms</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Rydberg atoms</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<p>This notebook presents how to use QDisc to reproduce the results on the Rydberg atom dataset.</p>
+<section id="dataset-and-training" class="level2">
+<h2 class="anchored" data-anchor-id="dataset-and-training">dataset and training</h2>
+<p>The data are experimental snapshots obtained from a programmable Rydberg atom array. For more information, see the experimental paper:</p>
+<p>https://www.nature.com/articles/s41586-021-03582-4</p>
+<div id="7c50fa57" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">## load the data (not provided here, this will give an error) ##</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'data_RydbergExpL13 (1).pkl'</span>, <span class="st">'rb'</span>) <span class="im">as</span> f:</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> pickle.load(f)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>snapshots <span class="op">=</span> data[<span class="st">'dataset'</span>]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>all_Rb <span class="op">=</span> jnp.array(data[<span class="st">'all_Rb'</span>])</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>all_delta <span class="op">=</span> jnp.array(data[<span class="st">'all_delta'</span>])</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>L <span class="op">=</span> <span class="dv">13</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> L<span class="op">*</span>L</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="da325396" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">## cast them into a QDisc Dataset object ##</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.dataset.core <span class="im">import</span> Dataset</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> Dataset(data<span class="op">=</span>snapshots, thetas<span class="op">=</span>[all_Rb, all_delta], data_type<span class="op">=</span><span class="st">'discrete'</span>, local_dimension<span class="op">=</span><span class="dv">2</span>, local_states<span class="op">=</span>jnp.array([<span class="dv">0</span>,<span class="dv">1</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="a62c8239" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">## create Transformer encoder and decoder ##</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.nn.core <span class="im">import</span> Transformer_encoder</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.nn.core <span class="im">import</span> Transformer_decoder</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.vae.core <span class="im">import</span> VAEmodel</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>encoder <span class="op">=</span> Transformer_encoder(latent_dim<span class="op">=</span><span class="dv">5</span>, d_model<span class="op">=</span><span class="dv">8</span>, num_heads<span class="op">=</span><span class="dv">4</span>, num_layers<span class="op">=</span><span class="dv">3</span>, data_type<span class="op">=</span><span class="st">'discrete'</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>decoder <span class="op">=</span> Transformer_decoder(d_model<span class="op">=</span><span class="dv">8</span>, num_heads<span class="op">=</span><span class="dv">4</span>, num_layers<span class="op">=</span><span class="dv">3</span>, data_type<span class="op">=</span><span class="st">'discrete'</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>myvae <span class="op">=</span> VAEmodel(encoder<span class="op">=</span>encoder, decoder<span class="op">=</span>decoder)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="f6f0ca78" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">## training and representation ##</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.vae.core <span class="im">import</span> VAETrainer</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>myvaetrainer <span class="op">=</span> VAETrainer(model<span class="op">=</span>myvae, dataset<span class="op">=</span>dataset)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> jax.random.PRNGKey(<span class="dv">6473</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>num_epochs <span class="op">=</span> <span class="dv">200</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>myvaetrainer.train(num_epochs<span class="op">=</span>num_epochs, batch_size<span class="op">=</span><span class="dv">3000</span>, beta<span class="op">=</span><span class="fl">0.45</span>, gamma<span class="op">=</span><span class="fl">0.</span>, key<span class="op">=</span>key, printing_rate<span class="op">=</span><span class="dv">10</span>, re_shuffle<span class="op">=</span><span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Start training...
+epoch=0 step=0 loss=119.569095476654 recon=117.79883895165419
+logvar=[ 1.07415317  0.77997939  0.72378845 -0.93821395 -0.10032408]
+epoch=10 step=0 loss=57.38552010440751 recon=56.24097025543754
+logvar=[-0.07107329 -0.16698306 -0.34394546 -4.30383545 -0.06234075]
+epoch=20 step=0 loss=56.43766805834163 recon=55.290590279764864
+logvar=[-5.25762906e-02 -2.62134787e-02 -9.96280070e-02 -4.49870754e+00
+ -2.65689430e-03]
+epoch=30 step=0 loss=55.400550071167956 recon=54.15427316108366
+logvar=[-0.24448012 -0.03299001 -0.01156073 -4.82013867 -0.0088556 ]
+epoch=40 step=0 loss=54.83681362387403 recon=53.43010166759967
+logvar=[-1.07542669 -0.01479255 -0.00726525 -4.86872305  0.01455821]
+epoch=50 step=0 loss=54.53603219957166 recon=53.091557566642486
+logvar=[-1.23756027e+00 -1.23709528e-02 -5.47091283e-03 -4.94531256e+00
+  3.28441727e-03]
+epoch=60 step=0 loss=54.43254836895113 recon=52.95765146657946
+logvar=[-1.31491583e+00  7.30443888e-03 -1.43214228e-03 -5.12444969e+00
+ -1.06741663e-02]
+epoch=70 step=0 loss=54.1974911817511 recon=52.71919527568474
+logvar=[-1.32034127e+00 -2.37230897e-02  1.86053524e-02 -5.13348633e+00
+ -1.70989903e-03]
+epoch=80 step=0 loss=54.12660673668517 recon=52.647385917253445
+logvar=[-1.3428631   0.02448355 -0.01474814 -4.96093612 -0.00953531]
+epoch=90 step=0 loss=53.92428452520894 recon=52.40086608436129
+logvar=[-1.34732496e+00 -6.91766618e-03  3.85537124e-03 -5.43389109e+00
+  1.05323362e-02]
+epoch=100 step=0 loss=53.81375978950114 recon=52.284231036530535
+logvar=[-1.24221828e+00  1.59933671e-03  1.10860366e-02 -5.40422867e+00
+  4.23926713e-03]
+epoch=110 step=0 loss=53.947662847043595 recon=52.389166815528945
+logvar=[-1.22268732 -0.01024584  0.01105267 -5.60247201  0.00754143]
+epoch=120 step=0 loss=53.65327323397351 recon=52.11970498272226
+logvar=[-1.14891570e+00  1.44860368e-03 -7.84471019e-03 -5.52474337e+00
+ -3.39629913e-03]
+epoch=130 step=0 loss=53.58965383275648 recon=52.03493555562553
+logvar=[-1.21718777e+00 -1.95895586e-03  1.06011300e-02 -5.49717389e+00
+ -1.73662012e-04]
+epoch=140 step=0 loss=53.741270003328054 recon=52.17246465086842
+logvar=[-1.20641303e+00  2.43419631e-03 -9.57970176e-03 -5.35377156e+00
+  2.04272250e-02]
+epoch=150 step=0 loss=53.504663767647344 recon=51.920817517337696
+logvar=[-1.13939071e+00 -4.74558356e-02 -5.17827363e-03 -5.59386329e+00
+ -1.79535286e-02]
+epoch=160 step=0 loss=53.42087330008696 recon=51.82503184617968
+logvar=[-1.20954355 -0.04384308 -0.06335316 -5.62403719 -0.01117719]
+epoch=170 step=0 loss=53.35845947168567 recon=51.74085816470033
+logvar=[-1.22017346 -0.04838106 -0.15391571 -5.70929859 -0.0138193 ]
+epoch=180 step=0 loss=53.38771218351293 recon=51.759155963089704
+logvar=[-1.18558398 -0.07025403 -0.13406768 -5.76573897 -0.01678924]
+epoch=190 step=0 loss=53.30599297063178 recon=51.645958555152056
+logvar=[-1.25971673 -0.01837498 -0.14288555 -5.67526412 -0.03959246]
+Training finished.</code></pre>
+</div>
+</div>
+<div id="1c677b1c" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> myvaetrainer.get_data()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="2f73e6d0-638d-48dc-bc47-645a88e8ef3a" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>myvaetrainer.plot_training(num_epochs <span class="op">=</span> num_epochs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-7-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-7-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="c45902c8" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>latvar <span class="op">=</span> myvaetrainer.compute_repr2d(theta_pair<span class="op">=</span>(<span class="dv">0</span>,<span class="dv">1</span>), return_latvar <span class="op">=</span> <span class="va">True</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>myvaetrainer.plot_repr2d(theta_pair<span class="op">=</span>(<span class="dv">0</span>,<span class="dv">1</span>),subplot<span class="op">=</span><span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-8-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-8-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-8-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-8-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-8-output-5.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-8-output-6.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-8-output-7.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-8-output-8.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-8-output-9.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-8-output-10.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-8-output-11.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-8-output-12.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-8-output-13.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-8-output-14.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-8-output-15.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="f4fabca3" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>data.keys()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>dict_keys(['params', 'history_loss', 'history_recon', 'history_logvar', 'latvar'])</code></pre>
+</div>
+</div>
+<div id="c619c396" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">## saving the data ##</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co">#data = myvaetrainer.get_data()</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'RydbergExpL13_data_cpVAE2_QDisc.pkl'</span>, <span class="st">'wb'</span>) <span class="im">as</span> f:</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    pickle.dump(data, f)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="a436d360" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">## example how to load the data ##</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'RydbergExpL13_data_cpVAE2_QDisc.pkl'</span>, <span class="st">'rb'</span>) <span class="im">as</span> f:</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> pickle.load(f)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>VAE_params <span class="op">=</span> data[<span class="st">'params'</span>]</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>myvaetrainer <span class="op">=</span> VAETrainer(model<span class="op">=</span>myvae, dataset<span class="op">=</span>dataset)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> jax.random.PRNGKey(<span class="dv">0</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>myvaetrainer.init_state(key, dataset.data[<span class="dv">0</span>,<span class="dv">0</span>])</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>myvaetrainer.state <span class="op">=</span> myvaetrainer.state.replace(params<span class="op">=</span>VAE_params)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="exploring-conditional-probabilities-with-the-decoder" class="level2">
+<h2 class="anchored" data-anchor-id="exploring-conditional-probabilities-with-the-decoder">Exploring conditional probabilities with the decoder</h2>
+<p>In this section, we demonstrate how the <strong>decoder of the cpVAE</strong> can be used to gain further insight into the ordering of each phase by examining the <strong>conditional probabilities</strong>.</p>
+<p>The procedure is as follows: 1. Specify the values of the latent variables corresponding to a region of interest in the latent space. 2. Identify the dataset samples associated with these latent values. 3. Input these samples into the decoder to compute the conditional probabilities of the spin configurations.</p>
+<div id="8426bd1f" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>latvar <span class="op">=</span> myvaetrainer.latvar</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>latvar.keys()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>dict_keys(['id_lat', 'theta_pair', 'mu0', 'mu0_abs', 'logvar0', 'mu1', 'mu1_abs', 'logvar1', 'mu2', 'mu2_abs', 'logvar2', 'mu3', 'mu3_abs', 'logvar3', 'mu4', 'mu4_abs', 'logvar4'])</code></pre>
+</div>
+</div>
+<div id="531dd3d1" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">## a snake ordering is used, need it to map back to 2d for plotting ##</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>snake_idx <span class="op">=</span> jnp.zeros((N,<span class="dv">2</span>))</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(N):</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#position of each atoms using the snake numbering</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  yp <span class="op">=</span> i<span class="op">//</span>L</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  xp <span class="op">=</span> (yp<span class="op">%</span><span class="dv">2</span><span class="op">==</span><span class="dv">0</span>)<span class="op">*</span>(i<span class="op">%</span>L) <span class="op">+</span> (yp<span class="op">%</span><span class="dv">2</span><span class="op">==</span><span class="dv">1</span>)<span class="op">*</span>(L<span class="op">-</span><span class="dv">1</span><span class="op">-</span>i<span class="op">%</span>L)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  snake_idx <span class="op">=</span> snake_idx.at[i].<span class="bu">set</span>(jnp.array([yp, xp]))</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>snake_idx <span class="op">=</span> snake_idx.astype(jnp.int64)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_cp(p_add_cluster):</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">5</span>),dpi<span class="op">=</span><span class="dv">75</span>)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> jnp.mean(p_add_cluster,axis<span class="op">=</span><span class="dv">0</span>)[:,<span class="dv">1</span>]</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    p2D <span class="op">=</span> jnp.zeros((L,L))</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    p2D <span class="op">=</span> p2D.at[snake_idx[:,<span class="dv">0</span>], snake_idx[:,<span class="dv">1</span>]].<span class="bu">set</span>(p)</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>    plt.imshow(p2D, cmap<span class="op">=</span>cmap_blue)</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    cbar <span class="op">=</span> plt.colorbar(orientation<span class="op">=</span><span class="st">"horizontal"</span>, pad<span class="op">=</span><span class="fl">0.03</span>, location<span class="op">=</span><span class="st">"top"</span>)</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>    cbar.set_label(<span class="st">'conditional probabilities'</span>)</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>    plt.xlabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">x</span><span class="dv">$</span><span class="vs"> position on the lattice'</span>)</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>    plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">y</span><span class="dv">$</span><span class="vs"> position on the lattice'</span>)</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>    x_tick_positions <span class="op">=</span> [i <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>,<span class="dv">13</span>,<span class="dv">2</span>)]</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>    x_tick_labels <span class="op">=</span> [<span class="bu">str</span>(i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>,<span class="dv">14</span>,<span class="dv">2</span>)]</span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>    plt.xticks(x_tick_positions, x_tick_labels)</span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>    y_tick_positions <span class="op">=</span> x_tick_positions</span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>    y_tick_labels <span class="op">=</span> [<span class="bu">str</span>(<span class="dv">14</span><span class="op">-</span>i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>,<span class="dv">14</span>,<span class="dv">2</span>)]</span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>    plt.yticks(y_tick_positions, y_tick_labels)</span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>latvar <span class="op">=</span> myvaetrainer.latvar</span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a>mu1 <span class="op">=</span> latvar[<span class="st">'mu1'</span>]</span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>mu0 <span class="op">=</span> latvar[<span class="st">'mu0'</span>]</span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>data_cond_prob <span class="op">=</span> {}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="12f9185d" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">## Additional cluter ##</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>mu1 <span class="op">=</span> latvar[<span class="st">'mu1'</span>]</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>idx_add_cluster <span class="op">=</span> jnp.argwhere(mu1<span class="op">&gt;</span><span class="fl">1.25</span>)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> dataset.data.shape[<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>data_add_cluster <span class="op">=</span> dataset.data[idx_add_cluster[:,<span class="dv">0</span>],idx_add_cluster[:,<span class="dv">1</span>],:,:].reshape(<span class="op">-</span><span class="dv">1</span>,N)[:<span class="dv">2000</span>]</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> jnp.zeros((<span class="dv">13</span>,<span class="dv">31</span>))</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> idx_add_cluster:</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  m <span class="op">=</span> m.at[i[<span class="dv">0</span>],i[<span class="dv">1</span>]].add(<span class="dv">1</span>)</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">4</span>),dpi<span class="op">=</span><span class="dv">75</span>)</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.flipud(m), aspect<span class="op">=</span><span class="st">'auto'</span>)</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>input_samples <span class="op">=</span> dataset.data[idx_add_cluster[:,<span class="dv">0</span>],idx_add_cluster[:,<span class="dv">1</span>],:,:].reshape(<span class="op">-</span><span class="dv">1</span>,N)</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> jax.random.PRNGKey(<span class="dv">0</span>)</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>cp <span class="op">=</span> myvaetrainer.get_cp(input_samples)</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>p_add_cluster <span class="op">=</span> jnp.exp(cp)</span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>plot_cp(p_add_cluster)</span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>data_cond_prob[<span class="st">'idx_add_cluster'</span>] <span class="op">=</span> idx_add_cluster</span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>data_cond_prob[<span class="st">'cp_add_cluster'</span>] <span class="op">=</span> cp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-14-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-14-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="5b508915" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">## Striated phase ##</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>id_somewhere_else <span class="op">=</span> jnp.argwhere(mu1<span class="op">&lt;-</span><span class="fl">0.95</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>data_somewhere_else<span class="op">=</span> dataset.data[id_somewhere_else[:,<span class="dv">0</span>],id_somewhere_else[:,<span class="dv">1</span>],:,:].reshape(<span class="op">-</span><span class="dv">1</span>,N)[:<span class="dv">2000</span>]</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> jnp.zeros((<span class="dv">13</span>,<span class="dv">31</span>))</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> id_somewhere_else:</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  m <span class="op">=</span> m.at[i[<span class="dv">0</span>],i[<span class="dv">1</span>]].add(<span class="dv">1</span>)</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">4</span>),dpi<span class="op">=</span><span class="dv">75</span>)</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.flipud(m), aspect<span class="op">=</span><span class="st">'auto'</span>)</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>cp <span class="op">=</span> myvaetrainer.get_cp(data_somewhere_else)</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>p_somewhere_else <span class="op">=</span> jnp.exp(cp)</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>plot_cp(p_somewhere_else)</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>idx_striated <span class="op">=</span> jnp.median(jnp.array(id_somewhere_else), axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>data_cond_prob[<span class="st">'idx_striated'</span>] <span class="op">=</span> idx_striated</span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>data_cond_prob[<span class="st">'cp_striated'</span>] <span class="op">=</span> cp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-15-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-15-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="29efaa56" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">## Checkerboard phase ##</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>mu0 <span class="op">=</span> latvar[<span class="st">'mu0'</span>]</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>id_somewhere_else <span class="op">=</span> jnp.argwhere(((mu0<span class="op">&lt;-</span><span class="fl">1.45</span>)<span class="op">*</span><span class="dv">1</span> <span class="op">+</span> (mu0<span class="op">&gt;-</span><span class="fl">1.55</span>)<span class="op">*</span><span class="dv">1</span>)<span class="op">==</span><span class="dv">2</span>)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="co">#just take the ones starting with 1 to not have degeneracies effect</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>data_somewhere_else <span class="op">=</span> dataset.data[id_somewhere_else[:,<span class="dv">0</span>],id_somewhere_else[:,<span class="dv">1</span>],:,:].reshape(<span class="op">-</span><span class="dv">1</span>,N)[:<span class="dv">2000</span>]<span class="co">#[jnp.argwhere(data_somewhere_else[:,0]==1)[:,0]]</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="co">#data_somewhere_else = data_somewhere_else[jnp.argwhere(data_somewhere_else[:,0]==1)[:,0]]</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> jnp.zeros((<span class="dv">13</span>,<span class="dv">31</span>))</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> id_somewhere_else:</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>  m <span class="op">=</span> m.at[i[<span class="dv">0</span>],i[<span class="dv">1</span>]].add(<span class="dv">1</span>)</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">4</span>),dpi<span class="op">=</span><span class="dv">75</span>)</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.flipud(m), aspect<span class="op">=</span><span class="st">'auto'</span>)</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>cbar <span class="op">=</span> plt.colorbar(orientation<span class="op">=</span><span class="st">"horizontal"</span>, pad<span class="op">=</span><span class="fl">0.03</span>, location<span class="op">=</span><span class="st">"top"</span>)</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>cbar.set_label(<span class="vs">r'class'</span>, fontsize<span class="op">=</span><span class="dv">20</span>, labelpad<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>cp <span class="op">=</span> myvaetrainer.get_cp(data_somewhere_else)</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>p_somewhere_else <span class="op">=</span> jnp.exp(cp)</span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>plot_cp(p_somewhere_else)</span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>idx_check <span class="op">=</span> jnp.median(jnp.array(id_somewhere_else), axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>data_cond_prob[<span class="st">'idx_check'</span>] <span class="op">=</span> idx_check</span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>data_cond_prob[<span class="st">'cp_check'</span>] <span class="op">=</span> cp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-16-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-16-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="70f1a41e" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">## Fully loaded lattice ##</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>id_somewhere_else <span class="op">=</span> jnp.argwhere(mu0<span class="op">&lt;-</span><span class="fl">2.2</span>)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>data_somewhere_else<span class="op">=</span> dataset.data[id_somewhere_else[:,<span class="dv">0</span>],id_somewhere_else[:,<span class="dv">1</span>],:,:].reshape(<span class="op">-</span><span class="dv">1</span>,N)[:<span class="dv">2000</span>]</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> jnp.zeros((<span class="dv">13</span>,<span class="dv">31</span>))</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> id_somewhere_else:</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  m <span class="op">=</span> m.at[i[<span class="dv">0</span>],i[<span class="dv">1</span>]].add(<span class="dv">1</span>)</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">4</span>),dpi<span class="op">=</span><span class="dv">75</span>)</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.flipud(m), aspect<span class="op">=</span><span class="st">'auto'</span>)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>cp <span class="op">=</span> myvaetrainer.get_cp(data_somewhere_else)</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>p_somewhere_else <span class="op">=</span> jnp.exp(cp)</span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> jnp.mean(p_somewhere_else,axis<span class="op">=</span><span class="dv">0</span>)[:,<span class="dv">1</span>]</span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>plot_cp(p_somewhere_else)</span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>idx_full <span class="op">=</span> jnp.median(jnp.array(id_somewhere_else), axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a>data_cond_prob[<span class="st">'idx_full'</span>] <span class="op">=</span> idx_full</span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a>data_cond_prob[<span class="st">'cp_full'</span>] <span class="op">=</span> cp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-17-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-17-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="93b4939a" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">## Empty lattice ##</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>id_somewhere_else <span class="op">=</span> jnp.argwhere(mu0<span class="op">&gt;</span><span class="fl">1.2</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>data_somewhere_else<span class="op">=</span> dataset.data[id_somewhere_else[:,<span class="dv">0</span>],id_somewhere_else[:,<span class="dv">1</span>],:,:].reshape(<span class="op">-</span><span class="dv">1</span>,N)[:<span class="dv">2000</span>,:]</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> jnp.zeros((<span class="dv">13</span>,<span class="dv">31</span>))</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> id_somewhere_else:</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>  m <span class="op">=</span> m.at[i[<span class="dv">0</span>],i[<span class="dv">1</span>]].add(<span class="dv">1</span>)</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">4</span>),dpi<span class="op">=</span><span class="dv">75</span>)</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.flipud(m), aspect<span class="op">=</span><span class="st">'auto'</span>)</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>cp <span class="op">=</span> myvaetrainer.get_cp(data_somewhere_else)</span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>p_somewhere_else <span class="op">=</span> jnp.exp(cp)</span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> jnp.mean(p_somewhere_else,axis<span class="op">=</span><span class="dv">0</span>)[:,<span class="dv">1</span>]</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>plot_cp(p_somewhere_else)</span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a>idx_empty <span class="op">=</span> jnp.median(jnp.array(id_somewhere_else), axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>data_cond_prob[<span class="st">'idx_empty'</span>] <span class="op">=</span> idx_empty</span>
+<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a>data_cond_prob[<span class="st">'cp_empty'</span>] <span class="op">=</span> cp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-18-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-18-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="5f791292" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">## Edge ordered phase ##</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>id_somewhere_else <span class="op">=</span> jnp.argwhere(((mu1<span class="op">&lt;</span><span class="dv">1</span>)<span class="op">*</span><span class="dv">1</span> <span class="op">+</span> (mu0<span class="op">&gt;-</span><span class="fl">.5</span>)<span class="op">*</span><span class="dv">1</span> <span class="op">+</span> (mu0<span class="op">&lt;</span><span class="dv">0</span>)<span class="op">*</span><span class="dv">1</span> <span class="op">+</span> (mu1<span class="op">&gt;</span><span class="fl">0.4</span>)<span class="op">*</span><span class="dv">1</span>)<span class="op">==</span><span class="dv">4</span>)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>data_somewhere_else<span class="op">=</span> dataset.data[id_somewhere_else[:,<span class="dv">0</span>],id_somewhere_else[:,<span class="dv">1</span>],:,:].reshape(<span class="op">-</span><span class="dv">1</span>,N)[:<span class="dv">2000</span>,:]</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> jnp.zeros((<span class="dv">13</span>,<span class="dv">31</span>))</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> id_somewhere_else:</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  m <span class="op">=</span> m.at[i[<span class="dv">0</span>],i[<span class="dv">1</span>]].add(<span class="dv">1</span>)</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">4</span>),dpi<span class="op">=</span><span class="dv">75</span>)</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.flipud(m), aspect<span class="op">=</span><span class="st">'auto'</span>)</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>cp <span class="op">=</span> myvaetrainer.get_cp(data_somewhere_else)</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>p_somewhere_else <span class="op">=</span> jnp.exp(cp)</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> jnp.mean(p_somewhere_else,axis<span class="op">=</span><span class="dv">0</span>)[:,<span class="dv">1</span>]</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>plot_cp(p_somewhere_else)</span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>idx_edge <span class="op">=</span> jnp.median(jnp.array(id_somewhere_else), axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>data_cond_prob[<span class="st">'idx_edge'</span>] <span class="op">=</span> idx_edge</span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>data_cond_prob[<span class="st">'cp_edge'</span>] <span class="op">=</span> cp</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-19-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-19-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="c19cfd89" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>data[<span class="st">'latvar'</span>] <span class="op">=</span> latvar</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>data[<span class="st">'data_cond_prob'</span>] <span class="op">=</span> data_cond_prob</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'RydbergExpL13_data_cpVAE2_QDisc.pkl'</span>, <span class="st">'wb'</span>) <span class="im">as</span> f:</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    pickle.dump(data, f)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="symbolic-regression" class="level2">
+<h2 class="anchored" data-anchor-id="symbolic-regression">Symbolic regression</h2>
+<p>In this section, we use <code>QDisc.SR.SymbolicRegression</code> with the <code>'genetic'</code> search space and the SR1 objective to find a symbolic function that characterizes the additional cluster.</p>
+<div id="0f27938a" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#import pysr</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pysr <span class="im">import</span> PySRRegressor <span class="co">#this take around 7min</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sympy <span class="im">as</span> sp</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pickle</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> jax <span class="im">import</span> numpy <span class="im">as</span> jnp</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib <span class="im">import</span> pyplot <span class="im">as</span> plt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[juliapkg] Found dependencies: /usr/local/lib/python3.12/dist-packages/juliapkg/juliapkg.json
+[juliapkg] Found dependencies: /usr/local/lib/python3.12/dist-packages/juliacall/juliapkg.json
+[juliapkg] Found dependencies: /usr/local/lib/python3.12/dist-packages/pysr/juliapkg.json
+[juliapkg] Locating Julia 1.10.3 - 1.11
+[juliapkg] Using Julia 1.11.5 at /usr/local/bin/julia
+[juliapkg] Using Julia project at /root/.julia/environments/pyjuliapkg
+[juliapkg] Writing Project.toml:
+           | [deps]
+           | PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
+           | OpenSSL_jll = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
+           | SymbolicRegression = "8254be44-1295-4e6a-a16d-46603ac705cb"
+           | Serialization = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
+           | 
+           | [compat]
+           | PythonCall = "=0.9.26"
+           | OpenSSL_jll = "~3.0"
+           | SymbolicRegression = "~1.11"
+           | Serialization = "^1"
+[juliapkg] Installing packages:
+           | import Pkg
+           | Pkg.Registry.update()
+           | Pkg.add([
+           |   Pkg.PackageSpec(name="PythonCall", uuid="6099a3de-0909-46bc-b1f4-468b9a2dfc0d"),
+           |   Pkg.PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"),
+           |   Pkg.PackageSpec(name="SymbolicRegression", uuid="8254be44-1295-4e6a-a16d-46603ac705cb"),
+           |   Pkg.PackageSpec(name="Serialization", uuid="9e88b42a-f829-5b0c-bbe9-9e923198166b"),
+           | ])
+           | Pkg.resolve()
+           | Pkg.precompile()
+Detected IPython. Loading juliacall extension. See https://juliapy.github.io/PythonCall.jl/stable/compat/#IPython</code></pre>
+</div>
+</div>
+<div id="15642871" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.colors <span class="im">import</span> ListedColormap</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.colors <span class="im">import</span> LinearSegmentedColormap</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.patches <span class="im">as</span> patches</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>custom_palette <span class="op">=</span> [<span class="st">'#001733'</span>, <span class="st">'#13678A'</span>, <span class="st">'#60C7BB'</span>, <span class="st">'#FFFDA8'</span>]</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>cmap_blue <span class="op">=</span> LinearSegmentedColormap.from_list(<span class="st">"custom_cmap"</span>, custom_palette)</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>custom_palette <span class="op">=</span> [<span class="st">'#221226'</span>,<span class="st">'#633D55'</span>,<span class="st">'#A3648B'</span>,<span class="st">'#F7FAFF'</span>]</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>cmap_purple <span class="op">=</span> LinearSegmentedColormap.from_list(<span class="st">"custom_cmap"</span>, custom_palette)</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>custom_palette <span class="op">=</span> [<span class="st">'#0D090D'</span>,<span class="st">'#365925'</span>,<span class="st">'#DAF2B6'</span>]</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>cmap_green3 <span class="op">=</span> LinearSegmentedColormap.from_list(<span class="st">"custom_cmap"</span>, custom_palette)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="9bbbbfd8" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>id_add_cluster <span class="op">=</span> jnp.argwhere(mu1<span class="op">&gt;</span><span class="fl">1.2</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>id_add_cluster</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>Array([[ 0, 11],
+       [ 0, 12],
+       [ 0, 13],
+       [ 1, 11],
+       [ 1, 12],
+       [ 2, 12],
+       [ 2, 13]], dtype=int64)</code></pre>
+</div>
+</div>
+<div id="1ac1777e" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'data_RydbergExpL13.pkl'</span>, <span class="st">'rb'</span>) <span class="im">as</span> f:</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> pickle.load(f)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>snapshots <span class="op">=</span> data[<span class="st">'dataset'</span>]</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>all_Rb <span class="op">=</span> jnp.array(data[<span class="st">'all_Rb'</span>])</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>all_delta <span class="op">=</span> jnp.array(data[<span class="st">'all_delta'</span>])</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>L <span class="op">=</span> <span class="dv">13</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> L<span class="op">*</span>L</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>idx_add_cluster <span class="op">=</span> jnp.array([[ <span class="dv">0</span>, <span class="dv">11</span>],</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">0</span>, <span class="dv">12</span>],</span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">0</span>, <span class="dv">13</span>],</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">1</span>, <span class="dv">11</span>],</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">1</span>, <span class="dv">12</span>],</span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">2</span>, <span class="dv">12</span>],</span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">2</span>, <span class="dv">13</span>]])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="7147e388" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co">## specify the indexe of the data labelled as outide and visualize ##</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="co">#id_add_cluster = jnp.argwhere(mu1&lt;-1.2)</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>classes <span class="op">=</span> <span class="dv">3</span><span class="op">*</span>jnp.ones((<span class="dv">13</span>,<span class="dv">31</span>))</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> idx_add_cluster:</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>  classes <span class="op">=</span> classes.at[i[<span class="dv">0</span>],i[<span class="dv">1</span>]].<span class="bu">set</span>(<span class="dv">1</span>)</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>classes <span class="op">=</span> classes.at[<span class="dv">7</span>:,<span class="dv">12</span>:<span class="dv">17</span>].<span class="bu">set</span>(<span class="dv">2</span>)</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">4</span>),dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>cmap_2bins <span class="op">=</span> ListedColormap([cmap_blue(<span class="fl">0.75</span>), cmap_purple(<span class="fl">0.65</span>), cmap_blue(<span class="fl">0.</span>)])</span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>im <span class="op">=</span> plt.imshow(jnp.flipud(classes), aspect<span class="op">=</span><span class="st">'auto'</span>, cmap<span class="op">=</span>cmap_2bins)</span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>cbar <span class="op">=</span> plt.colorbar(im, orientation<span class="op">=</span><span class="st">"horizontal"</span>, pad<span class="op">=</span><span class="fl">0.03</span>, location<span class="op">=</span><span class="st">"top"</span>, ticks<span class="op">=</span>[<span class="fl">1.33</span>, <span class="dv">2</span>, <span class="fl">2.66</span>])</span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>cbar.set_ticklabels([<span class="st">'0'</span>, <span class="st">'1'</span>, <span class="st">'Not in'</span>])</span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>cbar.set_label(<span class="vs">r'Dataset SR1'</span>)</span>
+<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$\D</span><span class="vs">elta/</span><span class="er">\</span><span class="vs">Omega</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">R_b/a</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb29-25"><a href="#cb29-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-26"><a href="#cb29-26" aria-hidden="true" tabindex="-1"></a>x_tick_positions <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">19</span>, <span class="dv">27</span>]  <span class="co"># Positions for the ticks</span></span>
+<span id="cb29-27"><a href="#cb29-27" aria-hidden="true" tabindex="-1"></a>x_tick_labels <span class="op">=</span> [<span class="st">'-2'</span>, <span class="st">'0'</span>, <span class="st">'2'</span>, <span class="st">'4'</span>]  <span class="co"># Labels for the ticks</span></span>
+<span id="cb29-28"><a href="#cb29-28" aria-hidden="true" tabindex="-1"></a>plt.xticks(x_tick_positions, x_tick_labels)</span>
+<span id="cb29-29"><a href="#cb29-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-30"><a href="#cb29-30" aria-hidden="true" tabindex="-1"></a>y_tick_positions <span class="op">=</span> [<span class="dv">0</span>,<span class="dv">6</span>,<span class="dv">12</span>]  <span class="co"># Positions for the ticks</span></span>
+<span id="cb29-31"><a href="#cb29-31" aria-hidden="true" tabindex="-1"></a>y_tick_labels <span class="op">=</span> [<span class="st">'2.0'</span>, <span class="st">'1.5'</span>, <span class="st">'1.0'</span>]  <span class="co"># Labels for the ticks</span></span>
+<span id="cb29-32"><a href="#cb29-32" aria-hidden="true" tabindex="-1"></a>plt.yticks(y_tick_positions, y_tick_labels)</span>
+<span id="cb29-33"><a href="#cb29-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-34"><a href="#cb29-34" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb29-35"><a href="#cb29-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-36"><a href="#cb29-36" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> snapshots</span>
+<span id="cb29-37"><a href="#cb29-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-38"><a href="#cb29-38" aria-hidden="true" tabindex="-1"></a>all_corners <span class="op">=</span> [[<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">25</span>,<span class="dv">24</span>], [<span class="dv">12</span>,<span class="dv">13</span>,<span class="dv">11</span>,<span class="dv">14</span>], [<span class="dv">156</span>,<span class="dv">155</span>,<span class="dv">157</span>,<span class="dv">154</span>], [<span class="dv">168</span>,<span class="dv">167</span>,<span class="dv">143</span>,<span class="dv">144</span>]]</span>
+<span id="cb29-39"><a href="#cb29-39" aria-hidden="true" tabindex="-1"></a>data_corners <span class="op">=</span> jnp.concatenate([snapshots[..., corners] <span class="cf">for</span> corners <span class="kw">in</span> all_corners], axis<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb29-40"><a href="#cb29-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-41"><a href="#cb29-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-42"><a href="#cb29-42" aria-hidden="true" tabindex="-1"></a>dataset_corners <span class="op">=</span> Dataset(data<span class="op">=</span>data_corners, thetas<span class="op">=</span>[all_Rb, all_delta], data_type<span class="op">=</span><span class="st">'discrete'</span>, local_dimension<span class="op">=</span><span class="dv">2</span>, local_states<span class="op">=</span>jnp.array([<span class="dv">0</span>,<span class="dv">1</span>]))</span>
+<span id="cb29-43"><a href="#cb29-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-44"><a href="#cb29-44" aria-hidden="true" tabindex="-1"></a>cluster_idx_in <span class="op">=</span> jnp.argwhere(classes<span class="op">==</span><span class="dv">1</span>)</span>
+<span id="cb29-45"><a href="#cb29-45" aria-hidden="true" tabindex="-1"></a>cluster_idx_out <span class="op">=</span> jnp.argwhere(classes<span class="op">==</span><span class="dv">2</span>)</span>
+<span id="cb29-46"><a href="#cb29-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-47"><a href="#cb29-47" aria-hidden="true" tabindex="-1"></a>mySR <span class="op">=</span> SymbolicRegression(dataset <span class="op">=</span> dataset_corners,</span>
+<span id="cb29-48"><a href="#cb29-48" aria-hidden="true" tabindex="-1"></a>                          cluster_idx_in <span class="op">=</span> cluster_idx_in,</span>
+<span id="cb29-49"><a href="#cb29-49" aria-hidden="true" tabindex="-1"></a>                          cluster_idx_out <span class="op">=</span> cluster_idx_out,</span>
+<span id="cb29-50"><a href="#cb29-50" aria-hidden="true" tabindex="-1"></a>                          objective<span class="op">=</span><span class="st">'SR1'</span>,</span>
+<span id="cb29-51"><a href="#cb29-51" aria-hidden="true" tabindex="-1"></a>                          search_space <span class="op">=</span> <span class="st">"2_body_correlator"</span> )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-25-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="6467e1b9" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co">## restrict the data to the corners of the lattice ##</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.sr.core <span class="im">import</span> SymbolicRegression</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> snapshots</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>all_corners <span class="op">=</span> [[<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">25</span>,<span class="dv">24</span>], [<span class="dv">12</span>,<span class="dv">13</span>,<span class="dv">11</span>,<span class="dv">14</span>], [<span class="dv">156</span>,<span class="dv">155</span>,<span class="dv">157</span>,<span class="dv">154</span>], [<span class="dv">168</span>,<span class="dv">167</span>,<span class="dv">143</span>,<span class="dv">144</span>]]</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>data_corners <span class="op">=</span> jnp.concatenate([snapshots[..., corners] <span class="cf">for</span> corners <span class="kw">in</span> all_corners], axis<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>dataset_corners <span class="op">=</span> Dataset(data<span class="op">=</span>data_corners, thetas<span class="op">=</span>[all_Rb, all_delta], data_type<span class="op">=</span><span class="st">'discrete'</span>, local_dimension<span class="op">=</span><span class="dv">2</span>, local_states<span class="op">=</span>jnp.array([<span class="dv">0</span>,<span class="dv">1</span>]))</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>cluster_idx_in <span class="op">=</span> jnp.argwhere(classes<span class="op">==</span><span class="dv">1</span>)</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>cluster_idx_out <span class="op">=</span> jnp.argwhere(classes<span class="op">==</span><span class="dv">2</span>)</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>mySR <span class="op">=</span> SymbolicRegression(dataset <span class="op">=</span> dataset_corners,</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>                          cluster_idx_in <span class="op">=</span> cluster_idx_in,</span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>                          cluster_idx_out <span class="op">=</span> cluster_idx_out,</span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>                          objective<span class="op">=</span><span class="st">'SR1'</span>,</span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>                          search_space <span class="op">=</span> <span class="st">"genetic"</span>,</span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>                          shift_data <span class="op">=</span> <span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>PySRRegressor imported</code></pre>
+</div>
+</div>
+<div id="2da5457b" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co">## search ##</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>all_perf, all_eqs, all_terms <span class="op">=</span> mySR.train(</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    key <span class="op">=</span> jax.random.PRNGKey(<span class="dv">645</span>),</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    dataset_size <span class="op">=</span> <span class="dv">5000</span>,</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>    random_state <span class="op">=</span> <span class="dv">123</span>,     <span class="co"># seed for reproductibility</span></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    niterations <span class="op">=</span> <span class="dv">20</span>,       <span class="co"># Number of iterations to search</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>    binary_operators <span class="op">=</span> [<span class="st">"+"</span>, <span class="st">"*"</span>, <span class="st">"-"</span>],  <span class="co"># Allowed binary operations</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>    elementwise_loss <span class="op">=</span> <span class="st">"loss(x,y) = -y*log(1/(1+exp(-x)))-(1-y)*log(1-1/(1+exp(-x)))"</span>,  <span class="co"># sigmoid loss for SR1</span></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>    maxsize <span class="op">=</span> <span class="dv">20</span>,            <span class="co"># max complexity of the equations</span></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>    progress <span class="op">=</span> <span class="va">True</span>,         <span class="co"># Show progress during training</span></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>    extra_sympy_mappings <span class="op">=</span> {<span class="st">"C"</span>: <span class="st">"C"</span>}, <span class="co"># Allow PySR to use constants</span></span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>    batching <span class="op">=</span> <span class="va">True</span>, <span class="co">#batching, usually big dataset</span></span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>    batch_size <span class="op">=</span> <span class="dv">1000</span>,</span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>    turbo <span class="op">=</span> <span class="va">True</span>,</span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>    deterministic <span class="op">=</span> <span class="va">True</span>, <span class="co">#for reproductibility</span></span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>    parallelism <span class="op">=</span> <span class="st">'serial'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/usr/local/lib/python3.12/dist-packages/pysr/sr.py:2811: UserWarning: Note: it looks like you are running in Jupyter. The progress bar will be turned off.
+  warnings.warn(
+Compiling Julia backend...
+INFO:pysr.sr:Compiling Julia backend...
+   Resolving package versions...
+   Installed ThreadingUtilities ─────────────── v0.5.5
+   Installed BitTwiddlingConvenienceFunctions ─ v0.1.6
+   Installed LayoutPointers ─────────────────── v0.1.17
+   Installed HostCPUFeatures ────────────────── v0.1.18
+   Installed ManualMemory ───────────────────── v0.1.8
+   Installed SIMDTypes ──────────────────────── v0.1.0
+   Installed VectorizationBase ──────────────── v0.21.72
+   Installed LoopVectorization ──────────────── v0.12.173
+   Installed SLEEFPirates ───────────────────── v0.6.43
+   Installed PolyesterWeave ─────────────────── v0.2.2
+   Installed UnPack ─────────────────────────── v1.0.2
+   Installed CloseOpenIntervals ─────────────── v0.1.13
+   Installed StaticArrayInterface ───────────── v1.9.0
+    Updating `~/.julia/environments/pyjuliapkg/Project.toml`
+  [bdcacae8] + LoopVectorization v0.12.173
+    Updating `~/.julia/environments/pyjuliapkg/Manifest.toml`
+  [62783981] + BitTwiddlingConvenienceFunctions v0.1.6
+  [2a0fbf3d] + CPUSummary v0.2.7
+  [fb6a15b2] + CloseOpenIntervals v0.1.13
+  [f70d9fcc] + CommonWorldInvalidations v1.0.0
+  [adafc99b] + CpuId v0.3.1
+  [3e5b6fbb] + HostCPUFeatures v0.1.18
+  [615f187c] + IfElse v0.1.1
+  [10f19ff3] + LayoutPointers v0.1.17
+  [bdcacae8] + LoopVectorization v0.12.173
+  [d125e4d3] + ManualMemory v0.1.8
+  [6fe1bfb0] + OffsetArrays v1.17.0
+  [1d0040c9] + PolyesterWeave v0.2.2
+  [94e857df] + SIMDTypes v0.1.0
+  [476501e8] + SLEEFPirates v0.6.43
+  [431bcebd] + SciMLPublic v1.0.1
+  [aedffcd0] + Static v1.3.1
+  [0d7ed370] + StaticArrayInterface v1.9.0
+  [8290d209] + ThreadingUtilities v0.5.5
+  [3a884ed6] + UnPack v1.0.2
+  [3d5dd08c] + VectorizationBase v0.21.72
+Precompiling project...
+   1893.7 ms  ✓ UnPack
+   1769.5 ms  ✓ SIMDTypes
+   2015.6 ms  ✓ ManualMemory
+   2236.4 ms  ✓ BitTwiddlingConvenienceFunctions
+   3408.0 ms  ✓ ThreadingUtilities
+   4904.3 ms  ✓ StaticArrayInterface
+   1641.3 ms  ✓ PolyesterWeave
+   3839.5 ms  ✓ HostCPUFeatures
+   1658.1 ms  ✓ StaticArrayInterface → StaticArrayInterfaceOffsetArraysExt
+   1264.0 ms  ✓ CloseOpenIntervals
+   1058.3 ms  ✓ LayoutPointers
+  13491.4 ms  ✓ VectorizationBase
+   1244.7 ms  ✓ SLEEFPirates
+  61586.3 ms  ✓ LoopVectorization
+   2773.2 ms  ✓ LoopVectorization → SpecialFunctionsExt
+   2875.6 ms  ✓ LoopVectorization → ForwardDiffExt
+   4768.5 ms  ✓ DynamicExpressions → DynamicExpressionsLoopVectorizationExt
+  17 dependencies successfully precompiled in 92 seconds. 139 already precompiled.
+  No Changes to `~/.julia/environments/pyjuliapkg/Project.toml`
+  No Changes to `~/.julia/environments/pyjuliapkg/Manifest.toml`
+┌ Warning: #= /root/.julia/packages/DynamicExpressions/cYbpm/ext/DynamicExpressionsLoopVectorizationExt.jl:142 =#:
+│ `LoopVectorization.check_args` on your inputs failed; running fallback `@inbounds @fastmath` loop instead.
+│ Use `warn_check_args=false`, e.g. `@turbo warn_check_args=false ...`, to disable this warning.
+└ @ DynamicExpressionsLoopVectorizationExt ~/.julia/packages/LoopVectorization/GKxH5/src/condense_loopset.jl:1166
+┌ Warning: #= /root/.julia/packages/DynamicExpressions/cYbpm/ext/DynamicExpressionsLoopVectorizationExt.jl:152 =#:
+│ `LoopVectorization.check_args` on your inputs failed; running fallback `@inbounds @fastmath` loop instead.
+│ Use `warn_check_args=false`, e.g. `@turbo warn_check_args=false ...`, to disable this warning.
+└ @ DynamicExpressionsLoopVectorizationExt ~/.julia/packages/LoopVectorization/GKxH5/src/condense_loopset.jl:1166
+┌ Warning: #= /root/.julia/packages/DynamicExpressions/cYbpm/ext/DynamicExpressionsLoopVectorizationExt.jl:187 =#:
+│ `LoopVectorization.check_args` on your inputs failed; running fallback `@inbounds @fastmath` loop instead.
+│ Use `warn_check_args=false`, e.g. `@turbo warn_check_args=false ...`, to disable this warning.
+└ @ DynamicExpressionsLoopVectorizationExt ~/.julia/packages/LoopVectorization/GKxH5/src/condense_loopset.jl:1166
+┌ Warning: #= /root/.julia/packages/DynamicExpressions/cYbpm/ext/DynamicExpressionsLoopVectorizationExt.jl:161 =#:
+│ `LoopVectorization.check_args` on your inputs failed; running fallback `@inbounds @fastmath` loop instead.
+│ Use `warn_check_args=false`, e.g. `@turbo warn_check_args=false ...`, to disable this warning.
+└ @ DynamicExpressionsLoopVectorizationExt ~/.julia/packages/LoopVectorization/GKxH5/src/condense_loopset.jl:1166
+┌ Warning: #= /root/.julia/packages/DynamicExpressions/cYbpm/ext/DynamicExpressionsLoopVectorizationExt.jl:212 =#:
+│ `LoopVectorization.check_args` on your inputs failed; running fallback `@inbounds @fastmath` loop instead.
+│ Use `warn_check_args=false`, e.g. `@turbo warn_check_args=false ...`, to disable this warning.
+└ @ DynamicExpressionsLoopVectorizationExt ~/.julia/packages/LoopVectorization/GKxH5/src/condense_loopset.jl:1166
+[ Info: Started!</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Expressions evaluated per second: 9.500e+02
+Progress: 46 / 620 total iterations (7.419%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           6.940e-01  0.000e+00  y = -0.081661
+3           6.346e-01  4.473e-02  y = x₁ + x₃
+5           6.208e-01  1.102e-02  y = (x₃ * 2.1711) + x₁
+7           6.018e-01  1.549e-02  y = (x₃ + (x₁ + -0.42624)) + x₃
+9           5.773e-01  2.080e-02  y = x₁ + (((x₃ - 0.21415) * 3.0877) + x₂)
+11          5.772e-01  1.125e-04  y = (((x₃ + (x₁ + x₃)) + -0.60713) + x₂) * 1.4292
+13          5.743e-01  2.526e-03  y = (x₃ * x₀) + (x₂ + ((-0.70466 + (x₃ + x₁)) + x₃))
+15          5.731e-01  1.021e-03  y = ((x₀ * (x₃ * 1.3817)) + (((x₂ + -0.70466) + x₃) + x₁))...
+                                       + x₃
+17          5.726e-01  4.610e-04  y = ((x₀ * (x₃ * 0.91296)) + ((x₂ + -0.68221) + ((x₃ + x₁)...
+                                       + x₃))) * 1.2419
+19          5.710e-01  1.364e-03  y = (((x₃ + (x₁ - ((-0.0098262 - x₂) * (x₁ + 0.75249)))) -...
+                                       -0.0073776) - (x₃ * -1.9871)) - 0.75249
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 9.130e+02
+Progress: 84 / 620 total iterations (13.548%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           6.932e-01  0.000e+00  y = -0.012652
+3           6.346e-01  4.414e-02  y = x₁ + x₃
+5           6.208e-01  1.102e-02  y = (x₃ * 2.1711) + x₁
+7           6.016e-01  1.567e-02  y = x₁ + ((x₃ - 0.21415) * 3.0877)
+9           5.773e-01  2.061e-02  y = x₁ + (((x₃ - 0.21415) * 3.0877) + x₂)
+11          5.772e-01  1.125e-04  y = (((x₃ + (x₁ + x₃)) + -0.60713) + x₂) * 1.4292
+13          5.739e-01  2.856e-03  y = (x₃ * x₀) + (((x₂ + (x₃ + x₁)) + -0.64617) + x₃)
+15          5.731e-01  6.903e-04  y = ((x₀ * (x₃ * 1.3817)) + (((x₂ + -0.70466) + x₃) + x₁))...
+                                       + x₃
+17          5.726e-01  4.610e-04  y = ((x₀ * (x₃ * 0.91296)) + ((x₂ + -0.68221) + ((x₃ + x₁)...
+                                       + x₃))) * 1.2419
+19          5.710e-01  1.364e-03  y = (((x₃ + (x₁ - ((-0.0098262 - x₂) * (x₁ + 0.75249)))) -...
+                                       -0.0073776) - (x₃ * -1.9871)) - 0.75249
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 9.440e+02
+Progress: 125 / 620 total iterations (20.161%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           6.931e-01  0.000e+00  y = 0
+3           6.346e-01  4.413e-02  y = x₁ + x₃
+5           6.208e-01  1.102e-02  y = (x₃ * 2.1711) + x₁
+7           6.016e-01  1.567e-02  y = x₁ + ((x₃ - 0.21415) * 3.0877)
+9           5.773e-01  2.061e-02  y = x₁ + (((x₃ - 0.21415) * 3.0877) + x₂)
+11          5.772e-01  1.125e-04  y = (((x₃ + (x₁ + x₃)) + -0.60713) + x₂) * 1.4292
+13          5.730e-01  3.664e-03  y = (((x₃ + x₃) * (x₀ + x₃)) + x₁) + (x₂ + -0.67966)
+15          5.701e-01  2.494e-03  y = (((x₃ + x₃) + x₃) + ((x₁ * x₂) + x₁)) + (x₂ + -0.76112...
+                                      )
+17          5.691e-01  8.939e-04  y = x₃ + (x₃ + (x₃ + (((x₂ + (x₂ + x₁)) * x₁) + (x₂ + -0.5...
+                                      7925))))
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 9.510e+02
+Progress: 163 / 620 total iterations (26.290%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           6.931e-01  0.000e+00  y = 0
+3           6.346e-01  4.413e-02  y = x₁ + x₃
+5           6.208e-01  1.102e-02  y = (x₃ * 2.1711) + x₁
+7           5.980e-01  1.866e-02  y = ((x₃ - 0.16037) * 2.7394) + x₁
+9           5.773e-01  1.762e-02  y = x₁ + (((x₃ - 0.21415) * 3.0877) + x₂)
+11          5.755e-01  1.549e-03  y = ((x₃ * (x₀ + 1.7235)) + x₁) + (x₂ + -0.67966)
+13          5.730e-01  2.228e-03  y = (((x₃ + x₃) * (x₀ + x₃)) + x₁) + (x₂ + -0.67966)
+15          5.701e-01  2.494e-03  y = (((x₃ + x₃) + x₃) + ((x₁ * x₂) + x₁)) + (x₂ + -0.76112...
+                                      )
+17          5.691e-01  8.939e-04  y = x₃ + (x₃ + (x₃ + (((x₂ + (x₂ + x₁)) * x₁) + (x₂ + -0.5...
+                                      7925))))
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 9.660e+02
+Progress: 205 / 620 total iterations (33.065%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           6.786e-01  0.000e+00  y = x₂
+3           6.346e-01  3.352e-02  y = x₁ + x₃
+5           6.207e-01  1.107e-02  y = (x₃ * 2.2239) + x₁
+7           5.979e-01  1.867e-02  y = ((x₃ - 0.1637) * 2.7958) + x₁
+9           5.773e-01  1.756e-02  y = x₁ + (((x₃ - 0.21415) * 3.0877) + x₂)
+11          5.755e-01  1.549e-03  y = ((x₃ * (x₀ + 1.7235)) + x₁) + (x₂ + -0.67966)
+13          5.730e-01  2.228e-03  y = (((x₃ + x₃) * (x₀ + x₃)) + x₁) + (x₂ + -0.67966)
+15          5.701e-01  2.494e-03  y = (((x₃ + x₃) + x₃) + ((x₁ * x₂) + x₁)) + (x₂ + -0.76112...
+                                      )
+17          5.691e-01  8.939e-04  y = x₃ + (x₃ + (x₃ + (((x₂ + (x₂ + x₁)) * x₁) + (x₂ + -0.5...
+                                      7925))))
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 9.800e+02
+Progress: 245 / 620 total iterations (39.516%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           6.786e-01  0.000e+00  y = x₂
+3           6.346e-01  3.352e-02  y = x₁ + x₃
+5           6.207e-01  1.108e-02  y = x₁ + (x₃ * 2.3544)
+7           5.979e-01  1.867e-02  y = (x₃ * 2.8277) + (x₁ + -0.48327)
+9           5.772e-01  1.762e-02  y = (x₃ * 3.0223) + ((x₁ + x₂) + -0.67966)
+11          5.755e-01  1.490e-03  y = ((x₃ * (x₀ + 1.7235)) + x₁) + (x₂ + -0.67966)
+13          5.722e-01  2.898e-03  y = ((x₂ + x₁) * x₂) + (x₁ + (-0.53616 + (x₃ * 2.8811)))
+15          5.701e-01  1.824e-03  y = (((x₃ + x₃) + x₃) + ((x₁ * x₂) + x₁)) + (x₂ + -0.76112...
+                                      )
+17          5.673e-01  2.459e-03  y = (x₃ + (((x₃ + x₃) + ((x₂ + (x₁ + x₂)) * x₁)) + x₂)) + ...
+                                      -0.69276
+19          5.673e-01  4.792e-05  y = x₃ + (((((x₁ + -0.61634) + x₂) * (x₂ + x₂)) + x₁) + (x...
+                                      ₃ + (x₃ - 0.71109)))
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 9.530e+02
+Progress: 282 / 620 total iterations (45.484%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           6.786e-01  0.000e+00  y = x₂
+3           6.346e-01  3.352e-02  y = x₁ + x₃
+5           6.207e-01  1.108e-02  y = x₁ + (x₃ * 2.3544)
+7           5.979e-01  1.867e-02  y = (x₃ * 2.8277) + (x₁ + -0.48327)
+9           5.772e-01  1.762e-02  y = (x₃ * 3.0223) + ((x₁ + x₂) + -0.67966)
+11          5.755e-01  1.490e-03  y = ((x₃ * (x₀ + 1.7235)) + x₁) + (x₂ + -0.67966)
+13          5.722e-01  2.898e-03  y = ((x₂ + x₁) * x₂) + (x₁ + (-0.53616 + (x₃ * 2.8811)))
+15          5.673e-01  4.283e-03  y = (x₃ + (x₃ + x₃)) + (((x₂ + x₁) * (x₁ + x₂)) + -0.69276...
+                                      )
+17          5.673e-01  4.426e-05  y = (x₃ + (x₃ + (((x₂ + (x₂ + x₁)) * x₁) + (x₃ + x₂)))) + ...
+                                      -0.72049
+19          5.655e-01  1.575e-03  y = (x₀ * x₃) + (x₃ + (x₃ + ((((x₂ + (x₁ + x₂)) * x₁) + x₂...
+                                      ) + -0.57925)))
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 1.000e+03
+Progress: 334 / 620 total iterations (53.871%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           6.512e-01  0.000e+00  y = x₃
+3           6.346e-01  1.288e-02  y = x₁ + x₃
+5           6.207e-01  1.108e-02  y = x₁ + (x₃ * 2.3544)
+7           5.979e-01  1.867e-02  y = (x₃ * 2.8277) + (x₁ + -0.48327)
+9           5.772e-01  1.762e-02  y = (x₃ * 3.0223) + ((x₁ + x₂) + -0.67966)
+11          5.755e-01  1.490e-03  y = ((x₃ * (x₀ + 1.7235)) + x₁) + (x₂ + -0.67966)
+13          5.673e-01  7.157e-03  y = (x₃ * 2.8811) + (((x₂ + x₁) * (x₁ + x₂)) + -0.72377)
+15          5.637e-01  3.256e-03  y = ((x₃ * (2.3752 + x₀)) + ((x₁ + x₂) * (x₁ + x₂))) + -0....
+                                      72377
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 9.500e+02
+Progress: 367 / 620 total iterations (59.194%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           6.512e-01  0.000e+00  y = x₃
+3           6.346e-01  1.288e-02  y = x₁ + x₃
+5           6.207e-01  1.108e-02  y = x₁ + (x₃ * 2.3544)
+7           5.979e-01  1.867e-02  y = (x₃ * 2.8277) + (x₁ + -0.48327)
+9           5.772e-01  1.762e-02  y = (x₃ * 3.0223) + ((x₁ + x₂) + -0.67966)
+11          5.755e-01  1.490e-03  y = ((x₃ * (x₀ + 1.7235)) + x₁) + (x₂ + -0.67966)
+13          5.673e-01  7.157e-03  y = (x₃ * 2.8811) + (((x₂ + x₁) * (x₁ + x₂)) + -0.72377)
+15          5.637e-01  3.256e-03  y = ((x₃ * (2.3752 + x₀)) + ((x₁ + x₂) * (x₁ + x₂))) + -0....
+                                      72377
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 9.520e+02
+Progress: 408 / 620 total iterations (65.806%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           6.512e-01  0.000e+00  y = x₃
+3           6.346e-01  1.288e-02  y = x₁ + x₃
+5           6.207e-01  1.108e-02  y = x₁ + (x₃ * 2.3544)
+7           5.979e-01  1.867e-02  y = (x₃ * 2.8277) + (x₁ + -0.48327)
+9           5.772e-01  1.762e-02  y = (x₃ * 3.0223) + ((x₁ + x₂) + -0.67966)
+11          5.755e-01  1.490e-03  y = ((x₃ * (x₀ + 1.7235)) + x₁) + (x₂ + -0.67966)
+13          5.673e-01  7.157e-03  y = (x₃ * 2.8811) + (((x₂ + x₁) * (x₁ + x₂)) + -0.72377)
+15          5.637e-01  3.256e-03  y = ((x₃ * (2.3752 + x₀)) + ((x₁ + x₂) * (x₁ + x₂))) + -0....
+                                      72377
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 9.710e+02
+Progress: 441 / 620 total iterations (71.129%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           6.512e-01  0.000e+00  y = x₃
+3           6.346e-01  1.288e-02  y = x₁ + x₃
+5           6.207e-01  1.108e-02  y = x₁ + (x₃ * 2.3544)
+7           5.979e-01  1.867e-02  y = (x₃ * 2.8277) + (x₁ + -0.48327)
+9           5.772e-01  1.762e-02  y = (x₃ * 3.0223) + ((x₁ + x₂) + -0.67966)
+11          5.755e-01  1.490e-03  y = ((x₃ * (x₀ + 1.7235)) + x₁) + (x₂ + -0.67966)
+13          5.673e-01  7.157e-03  y = (x₃ * 2.8811) + (((x₂ + x₁) * (x₁ + x₂)) + -0.72377)
+15          5.637e-01  3.256e-03  y = ((x₃ * (2.3752 + x₀)) + ((x₁ + x₂) * (x₁ + x₂))) + -0....
+                                      72377
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 8.780e+02
+Progress: 474 / 620 total iterations (76.452%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           6.512e-01  0.000e+00  y = x₃
+3           6.346e-01  1.288e-02  y = x₁ + x₃
+5           6.207e-01  1.108e-02  y = x₁ + (x₃ * 2.3544)
+7           5.979e-01  1.867e-02  y = (x₃ * 2.8277) + (x₁ + -0.48327)
+9           5.772e-01  1.762e-02  y = (x₃ * 3.0223) + ((x₁ + x₂) + -0.67966)
+11          5.755e-01  1.490e-03  y = ((x₃ * (x₀ + 1.7235)) + x₁) + (x₂ + -0.67966)
+13          5.673e-01  7.157e-03  y = (x₃ * 2.8811) + (((x₂ + x₁) * (x₁ + x₂)) + -0.72377)
+15          5.637e-01  3.256e-03  y = ((x₃ * (2.3752 + x₀)) + ((x₁ + x₂) * (x₁ + x₂))) + -0....
+                                      72377
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 8.880e+02
+Progress: 518 / 620 total iterations (83.548%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           6.512e-01  0.000e+00  y = x₃
+3           6.346e-01  1.288e-02  y = x₁ + x₃
+5           6.207e-01  1.108e-02  y = x₁ + (x₃ * 2.3544)
+7           5.979e-01  1.867e-02  y = (x₃ * 2.8277) + (x₁ + -0.48327)
+9           5.772e-01  1.762e-02  y = (x₃ * 3.0223) + ((x₁ + x₂) + -0.67966)
+11          5.755e-01  1.490e-03  y = ((x₃ * (x₀ + 1.7235)) + x₁) + (x₂ + -0.67966)
+13          5.673e-01  7.157e-03  y = (x₃ * 2.8811) + (((x₂ + x₁) * (x₁ + x₂)) + -0.72377)
+15          5.637e-01  3.256e-03  y = ((x₃ * (2.3752 + x₀)) + ((x₁ + x₂) * (x₁ + x₂))) + -0....
+                                      72377
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 8.760e+02
+Progress: 551 / 620 total iterations (88.871%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           6.512e-01  0.000e+00  y = x₃
+3           6.346e-01  1.288e-02  y = x₁ + x₃
+5           6.207e-01  1.109e-02  y = (x₃ * 2.251) + x₁
+7           5.979e-01  1.866e-02  y = (x₃ * 2.8277) + (x₁ + -0.48327)
+9           5.772e-01  1.762e-02  y = (x₃ * 3.0223) + ((x₁ + x₂) + -0.67966)
+11          5.755e-01  1.490e-03  y = ((x₃ * (x₀ + 1.7235)) + x₁) + (x₂ + -0.67966)
+13          5.673e-01  7.157e-03  y = (x₃ * 2.8811) + (((x₂ + x₁) * (x₁ + x₂)) + -0.72377)
+15          5.637e-01  3.256e-03  y = ((x₃ * (2.3752 + x₀)) + ((x₁ + x₂) * (x₁ + x₂))) + -0....
+                                      72377
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 8.990e+02
+Progress: 595 / 620 total iterations (95.968%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           6.512e-01  0.000e+00  y = x₃
+3           6.346e-01  1.288e-02  y = x₁ + x₃
+5           6.207e-01  1.109e-02  y = (x₃ * 2.251) + x₁
+7           5.979e-01  1.866e-02  y = (x₃ * 2.8277) + (x₁ + -0.48327)
+9           5.772e-01  1.762e-02  y = (x₃ * 3.0223) + ((x₁ + x₂) + -0.67966)
+11          5.755e-01  1.490e-03  y = ((x₃ * (x₀ + 1.7235)) + x₁) + (x₂ + -0.67966)
+13          5.673e-01  7.157e-03  y = (x₃ * 2.8811) + (((x₂ + x₁) * (x₁ + x₂)) + -0.72377)
+15          5.637e-01  3.256e-03  y = ((x₃ * (2.3752 + x₀)) + ((x₁ + x₂) * (x₁ + x₂))) + -0....
+                                      72377
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           6.512e-01  0.000e+00  y = x₃
+3           6.346e-01  1.288e-02  y = x₁ + x₃
+5           6.207e-01  1.109e-02  y = (x₃ * 2.251) + x₁
+7           5.979e-01  1.866e-02  y = (x₃ * 2.8277) + (x₁ + -0.48327)
+9           5.772e-01  1.762e-02  y = (x₃ * 3.0223) + ((x₁ + x₂) + -0.67966)
+11          5.755e-01  1.490e-03  y = ((x₃ * (x₀ + 1.7235)) + x₁) + (x₂ + -0.67966)
+13          5.673e-01  7.157e-03  y = (x₃ * 2.8811) + (((x₂ + x₁) * (x₁ + x₂)) + -0.72377)
+15          5.637e-01  3.256e-03  y = ((x₃ * (2.3752 + x₀)) + ((x₁ + x₂) * (x₁ + x₂))) + -0....
+                                      72377
+───────────────────────────────────────────────────────────────────────────────────────────────────</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>[ Info: Final population:
+[ Info: Results saved to:</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  - outputs/20260213_091433_AHqlFf/hall_of_fame.csv</code></pre>
+</div>
+</div>
+<div id="7fada5b3" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co">## look at the last equation ##</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>i <span class="op">=</span> <span class="dv">7</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>perf <span class="op">=</span> all_perf[i]</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>equation_sympy <span class="op">=</span> all_eqs[i]</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>terms <span class="op">=</span> all_terms[i]</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">'equation </span><span class="sc">{}</span><span class="st">: </span><span class="sc">{}</span><span class="st">, terms: </span><span class="sc">{}</span><span class="st">'</span>.<span class="bu">format</span>(i,perf,terms))</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(equation_sympy)</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>equation 7: 0.6969000101089478, terms: [1, x1**2, x2**2, x3, x0*x3, x1*x2]
+x0*x3 + x1**2 + 2*x1*x2 + x2**2 + 2.3751783*x3 - 0.72377163
+
+</code></pre>
+</div>
+</div>
+<div id="a50f645c" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sympy <span class="im">as</span> sp</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax.numpy <span class="im">as</span> jnp</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>f_str <span class="op">=</span> <span class="st">'2.0894327*x0*x3 + 2.0894327*x1*x2 + 0.857685211456824*x1 + x2 + 2.0894327*x3 - 0.776886377897628'</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>f_str <span class="op">=</span> <span class="st">'x0*x3 + x1 + 2*x1*x2 + x2 + 2.3751783*x3 - 0.72377163'</span></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>f_sympy <span class="op">=</span> sp.sympify(f_str)</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>x0, x1, x2, x3 <span class="op">=</span> sp.symbols(<span class="st">'x0 x1 x2 x3'</span>)</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>f_callable <span class="op">=</span> sp.lambdify([x0, x1, x2, x3], f_sympy, <span class="st">'jax'</span>)</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>all_corners <span class="op">=</span> [[<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">25</span>,<span class="dv">24</span>], [<span class="dv">12</span>,<span class="dv">13</span>,<span class="dv">11</span>,<span class="dv">14</span>], [<span class="dv">156</span>,<span class="dv">155</span>,<span class="dv">157</span>,<span class="dv">154</span>], [<span class="dv">168</span>,<span class="dv">167</span>,<span class="dv">143</span>,<span class="dv">144</span>]]</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>snapshots_coners <span class="op">=</span> jnp.concatenate([snapshots[..., corners] <span class="cf">for</span> corners <span class="kw">in</span> all_corners], axis<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>all_predictions <span class="op">=</span> f_callable(snapshots_coners[:,:,:,<span class="dv">0</span>], snapshots_coners[:,:,:,<span class="dv">1</span>], snapshots_coners[:,:,:,<span class="dv">2</span>], snapshots_coners[:,:,:,<span class="dv">3</span>])</span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-20"><a href="#cb39-20" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb39-21"><a href="#cb39-21" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">4</span>),dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb39-22"><a href="#cb39-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-23"><a href="#cb39-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-24"><a href="#cb39-24" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.flipud(jnp.mean(all_predictions, axis<span class="op">=-</span><span class="dv">1</span>)), cmap<span class="op">=</span>cmap_blue, aspect<span class="op">=</span><span class="st">'auto'</span>)</span>
+<span id="cb39-25"><a href="#cb39-25" aria-hidden="true" tabindex="-1"></a>cbar <span class="op">=</span> plt.colorbar(orientation<span class="op">=</span><span class="st">"horizontal"</span>, pad<span class="op">=</span><span class="fl">0.03</span>, location<span class="op">=</span><span class="st">"top"</span>)</span>
+<span id="cb39-26"><a href="#cb39-26" aria-hidden="true" tabindex="-1"></a>cbar.set_label(<span class="vs">r'f</span><span class="kw">(</span><span class="vs">x</span><span class="kw">)</span><span class="vs">'</span>)</span>
+<span id="cb39-27"><a href="#cb39-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-28"><a href="#cb39-28" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$\D</span><span class="vs">elta/</span><span class="er">\</span><span class="vs">Omega</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb39-29"><a href="#cb39-29" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">R_b/a</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb39-30"><a href="#cb39-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-31"><a href="#cb39-31" aria-hidden="true" tabindex="-1"></a>x_tick_positions <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">19</span>, <span class="dv">27</span>]  <span class="co"># Positions for the ticks</span></span>
+<span id="cb39-32"><a href="#cb39-32" aria-hidden="true" tabindex="-1"></a>x_tick_labels <span class="op">=</span> [<span class="st">'-2'</span>, <span class="st">'0'</span>, <span class="st">'2'</span>, <span class="st">'4'</span>]  <span class="co"># Labels for the ticks</span></span>
+<span id="cb39-33"><a href="#cb39-33" aria-hidden="true" tabindex="-1"></a>plt.xticks(x_tick_positions, x_tick_labels)</span>
+<span id="cb39-34"><a href="#cb39-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-35"><a href="#cb39-35" aria-hidden="true" tabindex="-1"></a>y_tick_positions <span class="op">=</span> [<span class="dv">0</span>,<span class="dv">6</span>,<span class="dv">12</span>]  <span class="co"># Positions for the ticks</span></span>
+<span id="cb39-36"><a href="#cb39-36" aria-hidden="true" tabindex="-1"></a>y_tick_labels <span class="op">=</span> [<span class="st">'2.0'</span>, <span class="st">'1.5'</span>, <span class="st">'1.0'</span>]  <span class="co"># Labels for the ticks</span></span>
+<span id="cb39-37"><a href="#cb39-37" aria-hidden="true" tabindex="-1"></a>plt.yticks(y_tick_positions, y_tick_labels)</span>
+<span id="cb39-38"><a href="#cb39-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-39"><a href="#cb39-39" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb39-40"><a href="#cb39-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-41"><a href="#cb39-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-42"><a href="#cb39-42" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb39-43"><a href="#cb39-43" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">4</span>),dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb39-44"><a href="#cb39-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-45"><a href="#cb39-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-46"><a href="#cb39-46" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.flipud(jnp.mean(all_predictions<span class="op">&gt;</span><span class="dv">0</span>, axis<span class="op">=-</span><span class="dv">1</span>)), cmap<span class="op">=</span>cmap_blue, aspect<span class="op">=</span><span class="st">'auto'</span>)</span>
+<span id="cb39-47"><a href="#cb39-47" aria-hidden="true" tabindex="-1"></a>cbar <span class="op">=</span> plt.colorbar(orientation<span class="op">=</span><span class="st">"horizontal"</span>, pad<span class="op">=</span><span class="fl">0.03</span>, location<span class="op">=</span><span class="st">"top"</span>)</span>
+<span id="cb39-48"><a href="#cb39-48" aria-hidden="true" tabindex="-1"></a>cbar.set_label(<span class="vs">r'f</span><span class="kw">(</span><span class="vs">x</span><span class="kw">)</span><span class="vs">&gt;0'</span>)</span>
+<span id="cb39-49"><a href="#cb39-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-50"><a href="#cb39-50" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$\D</span><span class="vs">elta/</span><span class="er">\</span><span class="vs">Omega</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb39-51"><a href="#cb39-51" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">R_b/a</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb39-52"><a href="#cb39-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-53"><a href="#cb39-53" aria-hidden="true" tabindex="-1"></a>x_tick_positions <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">19</span>, <span class="dv">27</span>]  <span class="co"># Positions for the ticks</span></span>
+<span id="cb39-54"><a href="#cb39-54" aria-hidden="true" tabindex="-1"></a>x_tick_labels <span class="op">=</span> [<span class="st">'-2'</span>, <span class="st">'0'</span>, <span class="st">'2'</span>, <span class="st">'4'</span>]  <span class="co"># Labels for the ticks</span></span>
+<span id="cb39-55"><a href="#cb39-55" aria-hidden="true" tabindex="-1"></a>plt.xticks(x_tick_positions, x_tick_labels)</span>
+<span id="cb39-56"><a href="#cb39-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-57"><a href="#cb39-57" aria-hidden="true" tabindex="-1"></a>y_tick_positions <span class="op">=</span> [<span class="dv">0</span>,<span class="dv">6</span>,<span class="dv">12</span>]  <span class="co"># Positions for the ticks</span></span>
+<span id="cb39-58"><a href="#cb39-58" aria-hidden="true" tabindex="-1"></a>y_tick_labels <span class="op">=</span> [<span class="st">'2.0'</span>, <span class="st">'1.5'</span>, <span class="st">'1.0'</span>]  <span class="co"># Labels for the ticks</span></span>
+<span id="cb39-59"><a href="#cb39-59" aria-hidden="true" tabindex="-1"></a>plt.yticks(y_tick_positions, y_tick_labels)</span>
+<span id="cb39-60"><a href="#cb39-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-61"><a href="#cb39-61" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb39-62"><a href="#cb39-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-63"><a href="#cb39-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-64"><a href="#cb39-64" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb39-65"><a href="#cb39-65" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">4</span>),dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb39-66"><a href="#cb39-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-67"><a href="#cb39-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-68"><a href="#cb39-68" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.flipud(jnp.mean(all_predictions, axis<span class="op">=-</span><span class="dv">1</span>)<span class="op">&gt;</span><span class="dv">0</span>), cmap<span class="op">=</span>cmap_blue, aspect<span class="op">=</span><span class="st">'auto'</span>)</span>
+<span id="cb39-69"><a href="#cb39-69" aria-hidden="true" tabindex="-1"></a>cbar <span class="op">=</span> plt.colorbar(orientation<span class="op">=</span><span class="st">"horizontal"</span>, pad<span class="op">=</span><span class="fl">0.03</span>, location<span class="op">=</span><span class="st">"top"</span>)</span>
+<span id="cb39-70"><a href="#cb39-70" aria-hidden="true" tabindex="-1"></a>cbar.set_label(<span class="vs">r'f</span><span class="kw">(</span><span class="vs">x</span><span class="kw">)</span><span class="vs">&gt;0'</span>)</span>
+<span id="cb39-71"><a href="#cb39-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-72"><a href="#cb39-72" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$\D</span><span class="vs">elta/</span><span class="er">\</span><span class="vs">Omega</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb39-73"><a href="#cb39-73" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">R_b/a</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb39-74"><a href="#cb39-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-75"><a href="#cb39-75" aria-hidden="true" tabindex="-1"></a>x_tick_positions <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">19</span>, <span class="dv">27</span>]  <span class="co"># Positions for the ticks</span></span>
+<span id="cb39-76"><a href="#cb39-76" aria-hidden="true" tabindex="-1"></a>x_tick_labels <span class="op">=</span> [<span class="st">'-2'</span>, <span class="st">'0'</span>, <span class="st">'2'</span>, <span class="st">'4'</span>]  <span class="co"># Labels for the ticks</span></span>
+<span id="cb39-77"><a href="#cb39-77" aria-hidden="true" tabindex="-1"></a>plt.xticks(x_tick_positions, x_tick_labels)</span>
+<span id="cb39-78"><a href="#cb39-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-79"><a href="#cb39-79" aria-hidden="true" tabindex="-1"></a>y_tick_positions <span class="op">=</span> [<span class="dv">0</span>,<span class="dv">6</span>,<span class="dv">12</span>]  <span class="co"># Positions for the ticks</span></span>
+<span id="cb39-80"><a href="#cb39-80" aria-hidden="true" tabindex="-1"></a>y_tick_labels <span class="op">=</span> [<span class="st">'2.0'</span>, <span class="st">'1.5'</span>, <span class="st">'1.0'</span>]  <span class="co"># Labels for the ticks</span></span>
+<span id="cb39-81"><a href="#cb39-81" aria-hidden="true" tabindex="-1"></a>plt.yticks(y_tick_positions, y_tick_labels)</span>
+<span id="cb39-82"><a href="#cb39-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-83"><a href="#cb39-83" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-29-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-29-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-29-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>[ColabKernelApp] WARNING | Error caught during object inspection: Can't clean for JSON: &lt;class 'sympy.core.symbol.Symbol'&gt;</code></pre>
+</div>
+</div>
+<p>Using our prior knowledge of the system, we can construct an order parameter by using the found correlator on the corner and subtracting the correlations on the edges and in the bulk.</p>
+<div id="d3ce4c2e" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_correlation_bulk_pos(x):</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">"""Computes the bulk correlation of a single configuration."""</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  c <span class="op">=</span> []</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(N):</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> i<span class="op">&gt;</span>L <span class="kw">and</span> i<span class="op">&lt;</span>(L<span class="op">*</span>L<span class="op">-</span>L) <span class="kw">and</span> i<span class="op">%</span>L<span class="op">!=</span><span class="dv">0</span> <span class="kw">and</span> (i<span class="op">+</span><span class="dv">1</span>)<span class="op">%</span>L<span class="op">!=</span><span class="dv">0</span>:</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>      yi <span class="op">=</span> i<span class="op">//</span>L</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>      xi <span class="op">=</span> (yi<span class="op">%</span><span class="dv">2</span><span class="op">==</span><span class="dv">0</span>)<span class="op">*</span>(i<span class="op">%</span>L) <span class="op">+</span> (yi<span class="op">%</span><span class="dv">2</span><span class="op">==</span><span class="dv">1</span>)<span class="op">*</span>(L<span class="op">-</span><span class="dv">1</span><span class="op">-</span>i<span class="op">%</span>L)</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>      j <span class="op">=</span> i<span class="op">+</span><span class="dv">1</span></span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>      c.append(x[i]<span class="op">*</span>x[j])</span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> jnp.mean(jnp.array(c),axis<span class="op">=-</span><span class="dv">1</span>)<span class="op">/</span><span class="dv">2</span></span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_correlation_edges_pos(x):</span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>  <span class="co">"""Computes the edge correlation of a single configuration."""</span></span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a>  c <span class="op">=</span> []</span>
+<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(L<span class="op">-</span><span class="dv">1</span>):</span>
+<span id="cb41-16"><a href="#cb41-16" aria-hidden="true" tabindex="-1"></a>    c.append(x[i]<span class="op">*</span>x[i<span class="op">+</span><span class="dv">1</span>])</span>
+<span id="cb41-17"><a href="#cb41-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(L<span class="op">*</span>L<span class="op">-</span>L,L<span class="op">*</span>L<span class="op">-</span><span class="dv">1</span>):</span>
+<span id="cb41-18"><a href="#cb41-18" aria-hidden="true" tabindex="-1"></a>    c.append(x[i]<span class="op">*</span>x[i<span class="op">+</span><span class="dv">1</span>])</span>
+<span id="cb41-19"><a href="#cb41-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(L<span class="op">-</span><span class="dv">1</span>,L<span class="op">*</span>L,L):</span>
+<span id="cb41-20"><a href="#cb41-20" aria-hidden="true" tabindex="-1"></a>    c.append(x[i]<span class="op">*</span>x[i<span class="op">+</span><span class="dv">1</span>])</span>
+<span id="cb41-21"><a href="#cb41-21" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>,L<span class="op">*</span>L,L):</span>
+<span id="cb41-22"><a href="#cb41-22" aria-hidden="true" tabindex="-1"></a>    c.append(x[i]<span class="op">*</span>x[i<span class="op">+</span><span class="dv">25</span>])</span>
+<span id="cb41-23"><a href="#cb41-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-24"><a href="#cb41-24" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> jnp.mean(jnp.array(c),axis<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb41-25"><a href="#cb41-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-26"><a href="#cb41-26" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_correlation_corner(x):</span>
+<span id="cb41-27"><a href="#cb41-27" aria-hidden="true" tabindex="-1"></a>  <span class="co">"""Computes the corner correlation of a single configuration."""</span></span>
+<span id="cb41-28"><a href="#cb41-28" aria-hidden="true" tabindex="-1"></a>  c <span class="op">=</span> []</span>
+<span id="cb41-29"><a href="#cb41-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-30"><a href="#cb41-30" aria-hidden="true" tabindex="-1"></a>  all_corners <span class="op">=</span> [[<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">25</span>,<span class="dv">24</span>], [<span class="dv">12</span>,<span class="dv">13</span>,<span class="dv">11</span>,<span class="dv">14</span>], [<span class="dv">156</span>,<span class="dv">155</span>,<span class="dv">157</span>,<span class="dv">154</span>], [<span class="dv">168</span>,<span class="dv">167</span>,<span class="dv">143</span>,<span class="dv">144</span>]]</span>
+<span id="cb41-31"><a href="#cb41-31" aria-hidden="true" tabindex="-1"></a>  x_corner <span class="op">=</span> jnp.concatenate([x[<span class="va">None</span>, corners] <span class="cf">for</span> corners <span class="kw">in</span> all_corners], axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb41-32"><a href="#cb41-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-33"><a href="#cb41-33" aria-hidden="true" tabindex="-1"></a>  c.append(x_corner[:,<span class="dv">0</span>]<span class="op">*</span>x_corner[:,<span class="dv">3</span>])</span>
+<span id="cb41-34"><a href="#cb41-34" aria-hidden="true" tabindex="-1"></a>  c.append(<span class="dv">2</span><span class="op">*</span>x_corner[:,<span class="dv">1</span>]<span class="op">*</span>x_corner[:,<span class="dv">2</span>])</span>
+<span id="cb41-35"><a href="#cb41-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-36"><a href="#cb41-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-37"><a href="#cb41-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-38"><a href="#cb41-38" aria-hidden="true" tabindex="-1"></a>  co <span class="op">=</span> jnp.<span class="bu">abs</span>(jnp.mean(jnp.array(c).reshape(<span class="op">-</span><span class="dv">1</span>),axis<span class="op">=-</span><span class="dv">1</span>))</span>
+<span id="cb41-39"><a href="#cb41-39" aria-hidden="true" tabindex="-1"></a>  ed <span class="op">=</span> jnp.<span class="bu">abs</span>(compute_correlation_edges_pos(x))</span>
+<span id="cb41-40"><a href="#cb41-40" aria-hidden="true" tabindex="-1"></a>  bu <span class="op">=</span> jnp.<span class="bu">abs</span>(compute_correlation_bulk_pos(x))</span>
+<span id="cb41-41"><a href="#cb41-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-42"><a href="#cb41-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-43"><a href="#cb41-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-44"><a href="#cb41-44" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span>  co <span class="op">-</span> ed <span class="op">-</span> bu</span>
+<span id="cb41-45"><a href="#cb41-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-46"><a href="#cb41-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-47"><a href="#cb41-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-48"><a href="#cb41-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-49"><a href="#cb41-49" aria-hidden="true" tabindex="-1"></a>compute_correlation_corner_vmap <span class="op">=</span> jax.vmap(jax.vmap(jax.vmap(compute_correlation_corner)))</span>
+<span id="cb41-50"><a href="#cb41-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-51"><a href="#cb41-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-52"><a href="#cb41-52" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">18</span></span>
+<span id="cb41-53"><a href="#cb41-53" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">3</span>,<span class="dv">3</span>),dpi<span class="op">=</span><span class="dv">200</span>)</span>
+<span id="cb41-54"><a href="#cb41-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-55"><a href="#cb41-55" aria-hidden="true" tabindex="-1"></a><span class="co">#S = data_exact['S']</span></span>
+<span id="cb41-56"><a href="#cb41-56" aria-hidden="true" tabindex="-1"></a>cor <span class="op">=</span> jnp.mean(compute_correlation_corner_vmap(snapshots<span class="op">*</span><span class="dv">2</span><span class="op">-</span><span class="dv">1</span>), axis<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb41-57"><a href="#cb41-57" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.flipud(cor), cmap<span class="op">=</span>cmap_green3, aspect<span class="op">=</span><span class="st">'auto'</span>)</span>
+<span id="cb41-58"><a href="#cb41-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-59"><a href="#cb41-59" aria-hidden="true" tabindex="-1"></a>cbar <span class="op">=</span> plt.colorbar(orientation<span class="op">=</span><span class="st">"horizontal"</span>, pad<span class="op">=</span><span class="fl">0.03</span>, location<span class="op">=</span><span class="st">"top"</span>)</span>
+<span id="cb41-60"><a href="#cb41-60" aria-hidden="true" tabindex="-1"></a>cbar.set_label(<span class="vs">r'f</span><span class="kw">(</span><span class="vs">x</span><span class="kw">)</span><span class="vs">'</span>, fontsize<span class="op">=</span><span class="dv">20</span>, labelpad<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb41-61"><a href="#cb41-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-62"><a href="#cb41-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-63"><a href="#cb41-63" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$\D</span><span class="vs">elta/</span><span class="er">\</span><span class="vs">Omega</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb41-64"><a href="#cb41-64" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">R_b/a</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb41-65"><a href="#cb41-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-66"><a href="#cb41-66" aria-hidden="true" tabindex="-1"></a>x_tick_positions <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">19</span>, <span class="dv">27</span>]  <span class="co"># Positions for the ticks</span></span>
+<span id="cb41-67"><a href="#cb41-67" aria-hidden="true" tabindex="-1"></a>x_tick_labels <span class="op">=</span> [<span class="st">'-2'</span>, <span class="st">'0'</span>, <span class="st">'2'</span>, <span class="st">'4'</span>]  <span class="co"># Labels for the ticks</span></span>
+<span id="cb41-68"><a href="#cb41-68" aria-hidden="true" tabindex="-1"></a>plt.xticks(x_tick_positions, x_tick_labels)</span>
+<span id="cb41-69"><a href="#cb41-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-70"><a href="#cb41-70" aria-hidden="true" tabindex="-1"></a>y_tick_positions <span class="op">=</span> [<span class="dv">0</span>,<span class="dv">6</span>,<span class="dv">12</span>]  <span class="co"># Positions for the ticks</span></span>
+<span id="cb41-71"><a href="#cb41-71" aria-hidden="true" tabindex="-1"></a>y_tick_labels <span class="op">=</span> [<span class="st">'2.0'</span>, <span class="st">'1.5'</span>, <span class="st">'1.0'</span>]  <span class="co"># Labels for the ticks</span></span>
+<span id="cb41-72"><a href="#cb41-72" aria-hidden="true" tabindex="-1"></a>plt.yticks(y_tick_positions, y_tick_labels)</span>
+<span id="cb41-73"><a href="#cb41-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-74"><a href="#cb41-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-75"><a href="#cb41-75" aria-hidden="true" tabindex="-1"></a><span class="co">#cbar.set_label(r'$\langle Z(r_j)Z(r_i) \rangle$  $(r_j,r_i)\in NN$')</span></span>
+<span id="cb41-76"><a href="#cb41-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-77"><a href="#cb41-77" aria-hidden="true" tabindex="-1"></a><span class="co">#plt.title('S')</span></span>
+<span id="cb41-78"><a href="#cb41-78" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-30-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="ad8fcb00" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">18</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">3</span>,<span class="dv">3</span>),dpi<span class="op">=</span><span class="dv">200</span>)</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.flipud(cor<span class="op">&gt;</span><span class="fl">0.2</span>), cmap<span class="op">=</span>cmap_green3, aspect<span class="op">=</span><span class="st">'auto'</span>)</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>cbar <span class="op">=</span> plt.colorbar(orientation<span class="op">=</span><span class="st">"horizontal"</span>, pad<span class="op">=</span><span class="fl">0.03</span>, location<span class="op">=</span><span class="st">"top"</span>)</span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>cbar.set_label(<span class="vs">r'f</span><span class="kw">(</span><span class="vs">x</span><span class="kw">)</span><span class="vs">'</span>, fontsize<span class="op">=</span><span class="dv">20</span>, labelpad<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$\D</span><span class="vs">elta/</span><span class="er">\</span><span class="vs">Omega</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">R_b/a</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>x_tick_positions <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">19</span>, <span class="dv">27</span>]  <span class="co"># Positions for the ticks</span></span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>x_tick_labels <span class="op">=</span> [<span class="st">'-2'</span>, <span class="st">'0'</span>, <span class="st">'2'</span>, <span class="st">'4'</span>]  <span class="co"># Labels for the ticks</span></span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>plt.xticks(x_tick_positions, x_tick_labels)</span>
+<span id="cb42-17"><a href="#cb42-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-18"><a href="#cb42-18" aria-hidden="true" tabindex="-1"></a>y_tick_positions <span class="op">=</span> [<span class="dv">0</span>,<span class="dv">6</span>,<span class="dv">12</span>]  <span class="co"># Positions for the ticks</span></span>
+<span id="cb42-19"><a href="#cb42-19" aria-hidden="true" tabindex="-1"></a>y_tick_labels <span class="op">=</span> [<span class="st">'2.0'</span>, <span class="st">'1.5'</span>, <span class="st">'1.0'</span>]  <span class="co"># Labels for the ticks</span></span>
+<span id="cb42-20"><a href="#cb42-20" aria-hidden="true" tabindex="-1"></a>plt.yticks(y_tick_positions, y_tick_labels)</span>
+<span id="cb42-21"><a href="#cb42-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-22"><a href="#cb42-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-23"><a href="#cb42-23" aria-hidden="true" tabindex="-1"></a><span class="co">#cbar.set_label(r'$\langle Z(r_j)Z(r_i) \rangle$  $(r_j,r_i)\in NN$')</span></span>
+<span id="cb42-24"><a href="#cb42-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-25"><a href="#cb42-25" aria-hidden="true" tabindex="-1"></a><span class="co">#plt.title('S')</span></span>
+<span id="cb42-26"><a href="#cb42-26" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_Rydberg_files/figure-html/cell-31-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/qic-ibk\.github\.io\/qdisc\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/qic-ibk/qdisc/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

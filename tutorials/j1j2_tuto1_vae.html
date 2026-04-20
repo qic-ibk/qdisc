@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Training VAEs on quantum data – QDisc</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-7d0f2692033adbfcebf02552a4d09f1a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Training VAEs on quantum data – QDisc">
+<meta property="og:description" content="">
+<meta property="og:image" content="https://qic-ibk.github.io/qdisc/tutorials/J1J2_tuto1_VAE_files/figure-html/cell-4-output-1.png">
+<meta property="og:site_name" content="QDisc">
+<meta property="og:image:height" content="402">
+<meta property="og:image:width" content="475">
+<meta name="twitter:title" content="Training VAEs on quantum data – QDisc">
+<meta name="twitter:description" content="">
+<meta name="twitter:image" content="https://qic-ibk.github.io/qdisc/tutorials/J1J2_tuto1_VAE_files/figure-html/cell-4-output-1.png">
+<meta name="twitter:image-height" content="402">
+<meta name="twitter:image-width" content="475">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../figs/qdisc_logo.png" alt="" class="navbar-logo light-content">
+    <img src="../figs/qdisc_logo.png" alt="" class="navbar-logo dark-content">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">QDisc</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/qic-ibk/qdisc"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../tutorials/j1j2_tuto1_vae.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../tutorials/j1j2_tuto1_vae.html">Training VAEs on quantum data</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Get started</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false">
+ <span class="menu-text">Examples</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/index_examples.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Readme</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/qdisc_rydberg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Rydberg atoms</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/qdisc_clusterising.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cluster Ising model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/qdisc_fkm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Falinov-Kimbal model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">Documentation</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/index_docs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Readme</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/clustering/core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/dataset/core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Dataset</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/nn/core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural networks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/sr/core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Symbolic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/vae/core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">VAE</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Tutorials</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/j1j2_tuto1_vae.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Training VAEs on quantum data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/j1j2_tuto2_sr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Extracting order parameters with SR</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#generating-quantum-data" id="toc-generating-quantum-data" class="nav-link active" data-scroll-target="#generating-quantum-data">Generating quantum data</a></li>
+  <li><a href="#learning-a-latent-representation-of-the-phase-space" id="toc-learning-a-latent-representation-of-the-phase-space" class="nav-link" data-scroll-target="#learning-a-latent-representation-of-the-phase-space">Learning a latent representation of the phase space</a></li>
+  <li><a href="#clustering-the-latent-representation" id="toc-clustering-the-latent-representation" class="nav-link" data-scroll-target="#clustering-the-latent-representation">Clustering the latent representation</a></li>
+  <li><a href="#symbolic-regression" id="toc-symbolic-regression" class="nav-link" data-scroll-target="#symbolic-regression">Symbolic regression</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/qic-ibk/qdisc/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="j1j2_tuto1_vae.html.md"><i class="bi bi-file-code"></i>CommonMark</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../tutorials/j1j2_tuto1_vae.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../tutorials/j1j2_tuto1_vae.html">Training VAEs on quantum data</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Training VAEs on quantum data</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<p>In this first tutorial, we show how the <strong>representation learning</strong> tools implemented in <code>qdisc</code> can be used to learn a representation of the phase space directly from <strong>unlabelled quantum data</strong>.</p>
+<p>We start by using <code>qdisc.dataset</code> to handle and preprocess the data efficiently, then walk through the <code>qdisc.vae</code> module, which provides tools to construct, customize, and train variational autoencoders (VAEs) for phase-space representation learning.</p>
+<p>The main entry point is the <code>qdisc.VAETrainer</code> class, initialized by specifying:</p>
+<ul>
+<li>the data (an instance of <code>qdisc.Dataset</code>),</li>
+<li>a VAE model (an instance of <code>qdisc.VAEmodel</code>),</li>
+<li>a set of hyperparameters.</li>
+</ul>
+<p>In the following we will:</p>
+<ol type="1">
+<li>Generate raw quantum data.</li>
+<li>Train a VAE to learn a latent representation of the phase space.</li>
+<li>Inspect active latent variables and visualize the learned structure.</li>
+<li>Apply symbolic regression (SR) methods to extract compact analytical descriptors for the latent clusters (tutorial 2).</li>
+</ol>
+<section id="generating-quantum-data" class="level2">
+<h2 class="anchored" data-anchor-id="generating-quantum-data">Generating quantum data</h2>
+<p>We consider a quantum experiment with a set of controllable <strong>experimental parameters</strong> <span class="math inline">\(\theta_{1,\ldots,k}\)</span>. For each parameter configuration, a measurement yields a string <span class="math inline">\(\mathbf{x}\)</span>, which can in principle take any form. Here we focus on experiments where individual subsystems — spins, atoms, or qubits — can be measured locally, either via discrete projective measurements in a fixed basis, measurements along random directions, or continuous local density measurements. In this case, <span class="math inline">\(\mathbf{x} = \{ x_i \}_{i=1}^{N}\)</span>, where <span class="math inline">\(N\)</span> is the number of subsystems.</p>
+<p>As a compact toy example, we use the <strong>J₁–J₂ model</strong> on a <span class="math inline">\(3\times 3\)</span> square lattice with <strong>open boundary conditions</strong>, fixing <span class="math inline">\(J_1 = 1\)</span>. The Hamiltonian is</p>
+<p><span class="math display">\[
+H_{J_1 J_2} = \sum_{\langle i,j\rangle} \sigma_i^z \sigma_j^z + J_2 \sum_{\langle\langle i,j\rangle\rangle} \sigma_i^z \sigma_j^z + h \sum_i \sigma_i^x,
+\]</span></p>
+<p>where <span class="math inline">\(\langle\cdot\rangle\)</span> and <span class="math inline">\(\langle\langle\cdot\rangle\rangle\)</span> denote nearest-neighbour (NN) and next-nearest-neighbour (NNN) pairs, respectively.</p>
+<p>The experimental tuning parameters are: - <span class="math inline">\(\theta_1 = J_2 \in [0,\,1.5]\)</span>, and - <span class="math inline">\(\theta_2 = h \in [0.1,\,2]\)</span>.</p>
+<p>In this tutorial, the data consist of <strong>measurement snapshots in the <span class="math inline">\(\sigma^z\)</span> basis</strong>, generated as follows:</p>
+<ol type="1">
+<li><strong>Exact diagonalization</strong> of the Hamiltonian over a grid of tuning parameter values <span class="math inline">\((\theta_1, \theta_2)\)</span>.</li>
+<li>Computation of measurement probabilities from the resulting ground-state wavefunction.</li>
+<li>Sampling of snapshots from these probabilities in the <span class="math inline">\(\sigma^z\)</span> basis.</li>
+</ol>
+<p>The Hamiltonian construction and exact diagonalization are performed using <a href="https://www.netket.org/"><strong>NetKet</strong></a>, a powerful library for computational quantum physics.</p>
+<div id="5e469141" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">## We define the Hamitonian using the NetKet Paulis operators ##</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>nk.config.netket_spin_ordering_warning <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> <span class="dv">9</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>hi <span class="op">=</span> nk.hilbert.Spin(s<span class="op">=</span><span class="dv">1</span><span class="op">/</span><span class="dv">2</span>, N<span class="op">=</span>N)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_H(J1,J2,h,N<span class="op">=</span>N):</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">'''J1J2 Hamiltonian'''</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># NN interactions</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    NN <span class="op">=</span> [(<span class="dv">0</span>,<span class="dv">1</span>),(<span class="dv">0</span>,<span class="dv">5</span>),(<span class="dv">1</span>,<span class="dv">4</span>),(<span class="dv">1</span>,<span class="dv">2</span>),(<span class="dv">2</span>,<span class="dv">3</span>),(<span class="dv">5</span>,<span class="dv">6</span>),(<span class="dv">5</span>,<span class="dv">4</span>),(<span class="dv">4</span>,<span class="dv">7</span>),(<span class="dv">4</span>,<span class="dv">3</span>),(<span class="dv">3</span>,<span class="dv">8</span>),(<span class="dv">6</span>,<span class="dv">7</span>),(<span class="dv">7</span>,<span class="dv">8</span>)]</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    H <span class="op">=</span> <span class="bu">sum</span>([J1<span class="op">*</span>sigmaz(hi,i)<span class="op">@</span>sigmaz(hi,j) <span class="cf">for</span> i,j <span class="kw">in</span> NN])</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># NNN interactions</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    NNN <span class="op">=</span> [(<span class="dv">0</span>,<span class="dv">4</span>),(<span class="dv">5</span>,<span class="dv">1</span>),(<span class="dv">1</span>,<span class="dv">3</span>),(<span class="dv">4</span>,<span class="dv">2</span>),(<span class="dv">5</span>,<span class="dv">7</span>),(<span class="dv">6</span>,<span class="dv">4</span>),(<span class="dv">4</span>,<span class="dv">8</span>),(<span class="dv">7</span>,<span class="dv">3</span>)]</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    H <span class="op">+=</span> <span class="bu">sum</span>([J2<span class="op">*</span>sigmaz(hi,i)<span class="op">@</span>sigmaz(hi,j) <span class="cf">for</span> i,j <span class="kw">in</span> NNN])</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># External field</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    H <span class="op">+=</span> <span class="bu">sum</span>([h<span class="op">*</span>sigmax(hi,i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(N)])</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> H</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="7e0ded2c" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#size of the system</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> <span class="dv">9</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">#define the various observables we want to compute</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>NN <span class="op">=</span> [(<span class="dv">0</span>,<span class="dv">1</span>),(<span class="dv">0</span>,<span class="dv">5</span>),(<span class="dv">1</span>,<span class="dv">4</span>),(<span class="dv">1</span>,<span class="dv">2</span>),(<span class="dv">2</span>,<span class="dv">3</span>),(<span class="dv">5</span>,<span class="dv">6</span>),(<span class="dv">5</span>,<span class="dv">4</span>),(<span class="dv">4</span>,<span class="dv">7</span>),(<span class="dv">4</span>,<span class="dv">3</span>),(<span class="dv">3</span>,<span class="dv">8</span>),(<span class="dv">6</span>,<span class="dv">7</span>),(<span class="dv">7</span>,<span class="dv">8</span>)]</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>NNN <span class="op">=</span> [(<span class="dv">0</span>,<span class="dv">4</span>),(<span class="dv">5</span>,<span class="dv">1</span>),(<span class="dv">1</span>,<span class="dv">3</span>),(<span class="dv">4</span>,<span class="dv">2</span>),(<span class="dv">5</span>,<span class="dv">7</span>),(<span class="dv">6</span>,<span class="dv">4</span>),(<span class="dv">4</span>,<span class="dv">8</span>),(<span class="dv">7</span>,<span class="dv">3</span>)]</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>corr_op <span class="op">=</span> <span class="bu">sum</span>([sigmaz(hi,i)<span class="op">@</span>sigmaz(hi,j) <span class="cf">for</span> i,j <span class="kw">in</span> NN])</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>corr2_op <span class="op">=</span> <span class="bu">sum</span>([sigmaz(hi,i)<span class="op">@</span>sigmaz(hi,j) <span class="cf">for</span> i,j <span class="kw">in</span> NNN])</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">#H parameters</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>J1 <span class="op">=</span> <span class="fl">1.</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>all_J2 <span class="op">=</span> jnp.linspace(<span class="dv">0</span>, <span class="fl">1.5</span>, <span class="dv">21</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>all_h <span class="op">=</span> jnp.linspace(<span class="dv">0</span>, <span class="fl">2.</span>, <span class="dv">21</span>)[<span class="dv">1</span>:]</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">#containers for the observables</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>energies <span class="op">=</span> jnp.zeros((<span class="bu">len</span>(all_J2),<span class="bu">len</span>(all_h)))</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>wave_fcts <span class="op">=</span> jnp.zeros((<span class="bu">len</span>(all_J2), <span class="bu">len</span>(all_h), <span class="dv">2</span><span class="op">**</span>N, <span class="dv">1</span>))</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>corr_gs <span class="op">=</span> jnp.zeros((<span class="bu">len</span>(all_J2),<span class="bu">len</span>(all_h)))</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>corr2_gs <span class="op">=</span> jnp.zeros((<span class="bu">len</span>(all_J2),<span class="bu">len</span>(all_h)))</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co">#exact diagonalization for every set of parameter of H</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, J2 <span class="kw">in</span> <span class="bu">enumerate</span>(all_J2):</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> j, h <span class="kw">in</span> <span class="bu">enumerate</span>(all_h):</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>        <span class="co">#print('J2: {}, h: {}'.format(J2,h))</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>        H <span class="op">=</span> get_H(J1,J2,h,N<span class="op">=</span>N)</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>        E_gs, ket_gs <span class="op">=</span> nk.exact.lanczos_ed(H, compute_eigenvectors<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>        corr <span class="op">=</span> (ket_gs.T.conj()<span class="op">@</span>corr_op.to_linear_operator()<span class="op">@</span>ket_gs).real[<span class="dv">0</span>,<span class="dv">0</span>]</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>        corr2 <span class="op">=</span> (ket_gs.T.conj()<span class="op">@</span>corr2_op.to_linear_operator()<span class="op">@</span>ket_gs).real[<span class="dv">0</span>,<span class="dv">0</span>]</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>        energies <span class="op">=</span> energies.at[i,j].<span class="bu">set</span>(E_gs[<span class="dv">0</span>])</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>        wave_fcts <span class="op">=</span> wave_fcts.at[i,j].<span class="bu">set</span>(ket_gs)</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>        corr_gs <span class="op">=</span> corr_gs.at[i,j].<span class="bu">set</span>(corr)</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>        corr2_gs <span class="op">=</span> corr2_gs.at[i,j].<span class="bu">set</span>(corr2)</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>data_exact <span class="op">=</span> {<span class="st">'energies'</span>: energies, <span class="st">'wave_fcts'</span>: wave_fcts, <span class="st">'corr_gs'</span>: corr_gs, <span class="st">'corr2_gs'</span>: corr2_gs}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Across the explored parameter space, the system exhibits <strong>three distinct phases</strong>.</p>
+<ol type="1">
+<li><p>For small <span class="math inline">\(J_2\)</span> and weak transverse field <span class="math inline">\(h\)</span>, the nearest-neighbour interactions dominate. This regime shows a <strong>Néel-ordered phase</strong>, characterized by antialigned nearest-neighbour spins.</p></li>
+<li><p>For large <span class="math inline">\(J_2\)</span> and small <span class="math inline">\(h\)</span>, the next-nearest-neighbour couplings become dominant. The system then enters a <strong>striped phase</strong>, in which nearest-neighbour spins align while next-nearest-neighbour spins are antialigned.</p></li>
+<li><p>Finally, for sufficiently large transverse field <span class="math inline">\(h\)</span>, the spins polarize along the <span class="math inline">\(x\)</span> direction, forming a <strong>polarized phase</strong>.</p></li>
+</ol>
+<p>We can visualize the phase space by looking at the next-nearest-neighbor correlator:</p>
+<div id="8182edf4" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">5</span>),dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.rot90(data_exact[<span class="st">'corr2_gs'</span>]))</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">J_2</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>plt.colorbar(shrink<span class="op">=</span><span class="fl">0.675</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="vs">r'corr'</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>y_tick_positions <span class="op">=</span> [<span class="dv">0</span>,<span class="dv">10</span>,<span class="dv">19</span>]</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>y_tick_labels <span class="op">=</span> [<span class="st">'2'</span>, <span class="st">'1'</span>, <span class="st">'0.1'</span>]</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>plt.yticks(y_tick_positions, y_tick_labels)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>x_tick_positions <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">20</span>]</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>x_tick_labels <span class="op">=</span> [<span class="st">'0'</span>, <span class="st">'0.75'</span>, <span class="st">'1.5'</span>]</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>plt.xticks(x_tick_positions, x_tick_labels)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="J1J2_tuto1_VAE_files/figure-html/cell-4-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We now generate the data using the exact wavefunction. To do so, we simply sample spin values from the probabilities given by the exact wavefunction using the function <a href="https://qic-ibk.github.io/qdisc/lib_nbs/dataset/core.html#sample_spin_configurations"><code>sample_spin_configurations</code></a> from <code>qdisc.dataset</code></p>
+<div id="46a44ed3" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">## generate the data ##</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.dataset.core <span class="im">import</span> sample_spin_configurations</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>num_sample_per_params <span class="op">=</span> <span class="dv">1000</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> jnp.zeros([jnp.size(all_J2), jnp.size(all_h), num_sample_per_params, N])</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> jax.random.PRNGKey(<span class="dv">8324</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>wave_fcts <span class="op">=</span> data_exact[<span class="st">'wave_fcts'</span>]</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, J2 <span class="kw">in</span> <span class="bu">enumerate</span>(all_J2):</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> j, h <span class="kw">in</span> <span class="bu">enumerate</span>(all_h):</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>      <span class="co">#print('J2: {}, h: {}'.format(J2,h))</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>      key, subkey <span class="op">=</span> jax.random.split(key)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>      samples <span class="op">=</span> sample_spin_configurations(wave_fcts[i,j], num_samples<span class="op">=</span>num_sample_per_params, N<span class="op">=</span>N, key<span class="op">=</span>subkey)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>      data <span class="op">=</span> data.at[i,j].<span class="bu">set</span>(samples)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>To check that the data produced is correct, we can look at the magnetization across the parameter space by just computing the average mean</p>
+<div id="b684c833" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">5</span>),dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.rot90(jnp.mean(jnp.<span class="bu">abs</span>(jnp.mean(data<span class="op">*</span><span class="dv">2</span><span class="op">-</span><span class="dv">1</span>, axis<span class="op">=-</span><span class="dv">1</span>)), axis<span class="op">=-</span><span class="dv">1</span>)))</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">J_2</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>plt.colorbar(shrink<span class="op">=</span><span class="fl">0.675</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="vs">r'magnetization'</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>y_tick_positions <span class="op">=</span> [<span class="dv">0</span>,<span class="dv">10</span>,<span class="dv">19</span>]</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>y_tick_labels <span class="op">=</span> [<span class="st">'2'</span>, <span class="st">'1'</span>, <span class="st">'0.1'</span>]</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>plt.yticks(y_tick_positions, y_tick_labels)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>x_tick_positions <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">20</span>]</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>x_tick_labels <span class="op">=</span> [<span class="st">'0'</span>, <span class="st">'0.75'</span>, <span class="st">'1.5'</span>]</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>plt.xticks(x_tick_positions, x_tick_labels)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="J1J2_tuto1_VAE_files/figure-html/cell-6-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We next cast the generated data into a <strong><code>qdisc.Dataset</code></strong> object, which provides a unified interface for handling quantum data within the qdisc pipeline.</p>
+<p>To construct the dataset, the following information must be specified: - the values of the tuning parameters, - the type of quantum data, - the dimension of the local Hilbert space, - the values of the local states (for discrete data).</p>
+<div id="dd532b86" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.dataset.core <span class="im">import</span> Dataset</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> Dataset(data<span class="op">=</span>data, thetas<span class="op">=</span>[all_J2, all_h], data_type<span class="op">=</span><span class="st">'discrete'</span>, local_dimension<span class="op">=</span><span class="dv">2</span>, local_states<span class="op">=</span>jnp.array([<span class="dv">0</span>,<span class="dv">1</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="learning-a-latent-representation-of-the-phase-space" class="level2">
+<h2 class="anchored" data-anchor-id="learning-a-latent-representation-of-the-phase-space">Learning a latent representation of the phase space</h2>
+<p>With the dataset in hand, we now learn a representation of the phase space using a <strong>variational autoencoder</strong> trained to reconstruct the <strong>conditional probabilities</strong> of spin configurations.</p>
+<p>The VAE consists of two neural networks: - an <strong>encoder</strong>, which takes a spin configuration as input and outputs a mean <span class="math inline">\(\mu_i\)</span> and variance <span class="math inline">\(\sigma_i\)</span> defining a latent distribution <span class="math inline">\(\mathcal{N}(\mu_i, \sigma_i)\)</span>, from which a latent variable <span class="math inline">\(z_i\)</span> is sampled; - a <strong>decoder</strong>, which reconstructs the conditional probabilities of the spin configuration given the latent variables <span class="math inline">\(\mathbf{z}\)</span>.</p>
+<p>Both networks are implemented using the <a href="https://flax.readthedocs.io/"><strong>Flax</strong></a> library. Several architectures are available in <code>qdisc.nn</code>; given the simplicity of the present system, we use: - a <strong>convolutional neural network</strong> for the encoder, and - a <strong>dense masked network</strong> for the decoder.</p>
+<p>A key strength of VAEs is their ability to <strong>adaptively infer the effective dimensionality</strong> of the latent space: by choosing a latent dimension larger than physically expected, the model learns to use only the dimensions it needs. Here, we set <code>latent_dim = 5</code>.</p>
+<div id="81945c89" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.nn.core <span class="im">import</span> EncoderCNN2D, ARNNDense</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>encoder <span class="op">=</span> EncoderCNN2D(latent_dim<span class="op">=</span><span class="dv">5</span>, conv_features <span class="op">=</span> <span class="dv">4</span><span class="op">*</span>N, dense_features <span class="op">=</span> <span class="dv">4</span><span class="op">*</span>N, num_conv_layers<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>decoder <span class="op">=</span> ARNNDense(num_layers<span class="op">=</span><span class="dv">4</span>, features<span class="op">=</span><span class="dv">4</span><span class="op">*</span>N)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>With the encoder and decoder defined above, we can assemble the VAE model using <code>qdisc.vae</code>:</p>
+<div id="4ea47bfe" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.vae.core <span class="im">import</span> VAEmodel</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>myvae <span class="op">=</span> VAEmodel(encoder<span class="op">=</span>encoder, decoder<span class="op">=</span>decoder)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The central object of this section is the <a href="https://qic-ibk.github.io/qdisc/lib_nbs/vae/core.html#vaetrainer"><code>VAETrainer</code></a> wrapper from <code>qdisc.vae</code>, which handles model training and computes the learned representation. It is instantiated from a VAE model and a dataset:</p>
+<div id="6ccdd3c2" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.vae.core <span class="im">import</span> VAETrainer</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>myvaetrainer <span class="op">=</span> VAETrainer(model<span class="op">=</span>myvae, dataset<span class="op">=</span>dataset)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>To train the model, we use the <code>.train()</code> method, specifying: - a random key (for reproducibility), - the number of training epochs, - the loss hyperparameters <span class="math inline">\(\alpha\)</span>, <span class="math inline">\(\beta\)</span>, and <span class="math inline">\(\gamma\)</span>.</p>
+<p>The training objective is defined as</p>
+<p><span class="math display">\[
+\mathcal{L} = \frac{1}{M}\sum_{m=1}^{M} \mathbb{E}_q[\log p(x^{(m)} \mid z)] - \beta \, \mathrm{KL}[q(z \mid x^{(m)}) \| p(z)]
+\]</span></p>
+<p>where <span class="math inline">\(M\)</span> is the number of training samples <span class="math inline">\(x^{(m)}\)</span>.</p>
+<p>The first term promotes accurate probabilistic reconstruction of the input data. The second is a regularization term that penalizes the Kullback–Leibler (KL) divergence between the latent posterior <span class="math inline">\(q(z_i) \sim \mathcal{N}(\mu_i, \sigma_i)\)</span> and the standard normal prior <span class="math inline">\(\mathcal{N}(0,1)\)</span>, keeping the latent representation close to an uninformed prior.</p>
+<p>The interplay between these two terms naturally yields a sparse latent structure: only the latent neurons required for faithful reconstruction deviate from the prior (<strong>active neurons</strong>), while the rest collapse to it (<strong>passive neurons</strong>). The hyperparameter <span class="math inline">\(\beta\)</span> controls the balance between the two contributions.</p>
+<p>The hyperparameter <span class="math inline">\(\gamma\)</span> weights the statistical correlations between latent neurons (total correlation regularization). This can improve interpretability and, in some cases, simplify hyperparameter tuning — see the <a href="https://tinyurl.com/4r4pjkum">original TC-VAE paper</a> for details.</p>
+<p>For hybrid data, the reconstruction loss comprises two distinct terms, whose relative weight is controlled by <span class="math inline">\(\alpha\)</span>. See the corresponding paper or the <a href="../examples/qdisc_fkm.html">FKM example notebook</a> for details.</p>
+<blockquote class="blockquote">
+<p><strong>Important:</strong> # The following training takes a few seconds on a GPU, but around an hour on a CPU. If you don’t want to spend this time, you can just load the trained data by running the next cell.</p>
+</blockquote>
+<div id="0d0dd212" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> jax.random.PRNGKey(<span class="dv">9812</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>num_epochs <span class="op">=</span> <span class="dv">30</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>myvaetrainer.train(num_epochs<span class="op">=</span>num_epochs, batch_size<span class="op">=</span><span class="dv">5000</span>, beta<span class="op">=</span><span class="fl">.5</span>, gamma<span class="op">=</span><span class="dv">5</span>, key<span class="op">=</span>key, printing_rate<span class="op">=</span><span class="dv">4</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Start training...
+epoch=0 step=0 loss=-164.0816877940576 recon=6.24122033277154
+logvar=[ 0.02889643  0.06553731  0.08578867  0.07469489 -0.11742282]
+epoch=4 step=0 loss=-166.45211124671502 recon=2.5760088226371716
+logvar=[-1.36892477e-03 -4.82999374e-02 -6.22983538e-02 -5.30253240e-02
+ -5.17253551e+00]
+epoch=8 step=0 loss=-166.69147796032797 recon=2.1487739147339293
+logvar=[ 0.00951258 -0.01400834 -0.02464279 -0.00858941 -5.84861374]
+epoch=12 step=0 loss=-166.7729565138266 recon=1.9637902448406568
+logvar=[-0.03862359 -0.04633447 -0.01720772 -0.0306454  -6.30670534]
+epoch=16 step=0 loss=-166.87305732748734 recon=1.8128534112447012
+logvar=[-0.0251713  -0.03875362 -0.02637963 -0.02864144 -6.4948804 ]
+epoch=20 step=0 loss=-166.8853334271902 recon=1.773370016137969
+logvar=[-0.01703035 -0.03162701 -0.02305127 -0.0382037  -6.62230354]
+epoch=24 step=0 loss=-166.97256104566398 recon=1.6597759778974905
+logvar=[-0.02856087 -0.04890603 -0.03495724 -0.03407848 -6.66632657]
+epoch=28 step=0 loss=-166.87848415521344 recon=1.7192362466692372
+logvar=[-2.64610119e-02 -4.01741369e-02 -1.93288443e-02  3.23893816e-03
+ -6.80669410e+00]
+Training finished.</code></pre>
+</div>
+</div>
+<p>As indicated by simple observables such as the next-nearest-neighbour correlator, the phase space of this system can be fully characterized by a <strong>single parameter</strong>. We therefore expect only <strong>one active latent neuron</strong>, with the remaining ones collapsing to the prior.</p>
+<p>To encourage this behavior, we use relatively large weights for the <strong>KL divergence</strong> and <strong>total correlation (TC)</strong> terms. The TC regularization helps sparsify the latent representation, since an active latent variable is typically weakly correlated with noise. When only one neuron is active, the TC term does not alter the learned representation but still suppresses spurious correlations among passive neurons.</p>
+<p>To inspect the training progress, we can examine the reconstruction loss and the log-variances of the latent neurons using the <code>.plot_training()</code> method:</p>
+<div id="4abb50b1-b98a-4849-b79f-746c3757d58f" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#load the trained model</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'J1J2_data_cpVAE2_QDisc.pkl'</span>, <span class="st">'rb'</span>) <span class="im">as</span> f:</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    all_data <span class="op">=</span> pickle.load(f)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>myvaetrainer.init_state(jax.random.PRNGKey(<span class="dv">0</span>), dataset.data[<span class="dv">0</span>,<span class="dv">0</span>])</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>myvaetrainer.state <span class="op">=</span> myvaetrainer.state.replace(params<span class="op">=</span>all_data[<span class="st">'params'</span>])</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>myvaetrainer.history_recon <span class="op">=</span> all_data[<span class="st">'history_recon'</span>]</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>myvaetrainer.history_logvar <span class="op">=</span> all_data[<span class="st">'history_logvar'</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="69c991b7" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>myvaetrainer.plot_training(num_epochs <span class="op">=</span> num_epochs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="J1J2_tuto1_VAE_files/figure-html/cell-13-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="J1J2_tuto1_VAE_files/figure-html/cell-13-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The model encodes information in a single active latent variable, with the log-variance of all others collapsing to zero.</p>
+<p>To inspect the learned representation, use <code>compute_repr2d()</code> to compute it and <code>plot_repr2d()</code> to visualize it — or combine both steps with <code>.compute_and_plot_repr2d()</code>, as shown below:</p>
+<div id="fd95b993" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#latvar = myvaetrainer.compute_repr2d(return_latvar = True) #this also update the attribute latvar of the object</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co">#myvaetrainer.plot_repr2d()</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co">## or one can do both by just calling</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># now the latent variables are ordered with respect to the values of their logvar: from low (most active) to high (most passive)</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>myvaetrainer.compute_and_plot_repr2d()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="J1J2_tuto1_VAE_files/figure-html/cell-14-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>During training, the VAE reduces its reconstruction loss. However, a low reconstruction loss alone does not guarantee that the model faithfully approximates the true ground state. It is therefore essential to explicitly assess the <strong>quality of the reconstructed physical observables</strong>.</p>
+<p>A common approach is to generate samples from the decoder and compute statistical estimates of selected observables. In our example, this is done by sampling spin configurations from the learned conditional distribution.</p>
+<p>Below, we use the <code>.reconstruct_sample()</code> method to generate spin configurations at each point in parameter space and then compute the <strong>average magnetization</strong> across the full parameter range.</p>
+<div id="2a41d5a8" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>reconstruct_sample <span class="op">=</span> jnp.zeros_like(dataset.data)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> jax.random.PRNGKey(<span class="dv">2687</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(dataset.data.shape[<span class="dv">0</span>]):</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(dataset.data.shape[<span class="dv">1</span>]):</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    subkey, key <span class="op">=</span> jax.random.split(key)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    reconstruct_sample <span class="op">=</span> reconstruct_sample.at[i,j].<span class="bu">set</span>(myvaetrainer.reconstruct_sample(dataset.data[i,j],subkey))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="c354e13e" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">5</span>),dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.rot90(jnp.mean(jnp.<span class="bu">abs</span>(jnp.mean(reconstruct_sample<span class="op">*</span><span class="dv">2</span><span class="op">-</span><span class="dv">1</span>,axis<span class="op">=</span>(<span class="op">-</span><span class="dv">1</span>))),axis<span class="op">=-</span><span class="dv">1</span>)))</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">J_2</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>plt.colorbar(shrink<span class="op">=</span><span class="fl">0.675</span>)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="vs">r'magn'</span>)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>y_tick_positions <span class="op">=</span> [<span class="dv">0</span>,<span class="dv">10</span>,<span class="dv">19</span>]</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>y_tick_labels <span class="op">=</span> [<span class="st">'2'</span>, <span class="st">'1'</span>, <span class="st">'0.1'</span>]</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>plt.yticks(y_tick_positions, y_tick_labels)</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>x_tick_positions <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">20</span>]</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>x_tick_labels <span class="op">=</span> [<span class="st">'0'</span>, <span class="st">'0.75'</span>, <span class="st">'1.5'</span>]</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>plt.xticks(x_tick_positions, x_tick_labels)</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="J1J2_tuto1_VAE_files/figure-html/cell-16-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This can be compared with the magnetization computed directly from the dataset.</p>
+<div id="e5f82439" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">5</span>),dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.rot90(jnp.mean(jnp.<span class="bu">abs</span>(jnp.mean(dataset.data<span class="op">*</span><span class="dv">2</span><span class="op">-</span><span class="dv">1</span>,axis<span class="op">=</span>(<span class="op">-</span><span class="dv">1</span>))),axis<span class="op">=-</span><span class="dv">1</span>)))</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">J_2</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>plt.colorbar(shrink<span class="op">=</span><span class="fl">0.675</span>)</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="vs">r'magn'</span>)</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>y_tick_positions <span class="op">=</span> [<span class="dv">0</span>,<span class="dv">10</span>,<span class="dv">19</span>]</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>y_tick_labels <span class="op">=</span> [<span class="st">'2'</span>, <span class="st">'1'</span>, <span class="st">'0.1'</span>]</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>plt.yticks(y_tick_positions, y_tick_labels)</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>x_tick_positions <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">20</span>]</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>x_tick_labels <span class="op">=</span> [<span class="st">'0'</span>, <span class="st">'0.75'</span>, <span class="st">'1.5'</span>]</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>plt.xticks(x_tick_positions, x_tick_labels)</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a><span class="co">#quick comparaison without setting the same cbar</span></span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a><span class="co">#given the patterns, should be ~1/9 for neel and ~1/3 for striped</span></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a><span class="co">#the apparent magnetization in the polarized phase is due to the fact that we make the average of the absolute magn. (all zero due to Z2 degene otherwise)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="J1J2_tuto1_VAE_files/figure-html/cell-17-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The <code>.get_data()</code> method returns a dictionary containing the training history, the optimized VAE parameters, the learned representation, and more.</p>
+<div id="ba157466" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>all_data <span class="op">=</span> myvaetrainer.get_data()</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>all_data.keys()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>dict_keys(['params', 'history_loss', 'history_recon', 'history_logvar', 'latvar'])</code></pre>
+</div>
+</div>
+<p>The data can then be saved using <code>pickle</code>:</p>
+<div id="884e08e9" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">## also add the data and the exact corr ##</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>all_data[<span class="st">'corr_exact'</span>] <span class="op">=</span> data_exact[<span class="st">'corr_gs'</span>]</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>all_data[<span class="st">'corr2_exact'</span>] <span class="op">=</span> data_exact[<span class="st">'corr2_gs'</span>]</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>all_data[<span class="st">'data'</span>] <span class="op">=</span> dataset.data</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="b53962af" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'J1J2_data_cpVAE2_QDisc.pkl'</span>, <span class="st">'wb'</span>) <span class="im">as</span> f:</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    pickle.dump(all_data, f)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>And loaded back with:</p>
+<div id="c883ffac" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'J1J2_data_cpVAE2_QDisc.pkl'</span>, <span class="st">'rb'</span>) <span class="im">as</span> f:</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    all_data <span class="op">=</span> pickle.load(f)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="clustering-the-latent-representation" class="level2">
+<h2 class="anchored" data-anchor-id="clustering-the-latent-representation">Clustering the latent representation</h2>
+<p>In this toy example, the different phases are clearly visible in the learned latent representation. For more complex phase diagrams or higher-dimensional representations, however, identifying phase boundaries by eye becomes challenging. To address this, <strong><code>qdisc</code> provides clustering tools</strong> that operate directly on the latent space to automatically identify distinct phases.</p>
+<p>The clustering algorithm currently implemented is a <strong>Gaussian Mixture Model (GMM)</strong>, applied to a feature vector <span class="math inline">\(X\)</span> constructed as follows: - the first component is the average value of the <strong>active latent variable</strong> across the parameter space; - the (normalized) tuning parameters <span class="math inline">\(\theta_i\)</span> are appended to this vector.</p>
+<p>Including the tuning parameters helps the GMM find clusters with smoother, better-defined boundaries. Their relative contribution is controlled by a weighting parameter <span class="math inline">\(\alpha\)</span>.</p>
+<p>To use <code>qdisc.clustering.GaussianMixture</code>, one must specify: - the number of clusters (phases), - the maximum number of iterations.</p>
+<p>An optional <span class="math inline">\(k\)</span>-means initialization can be enabled via <code>init_params="kmeans"</code>.</p>
+<div id="0ea8bcec" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.clustering.core <span class="im">import</span> GaussianMixture</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co">## get the latent representation</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co">#latvar = myvaetrainer.latvar</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>latvar <span class="op">=</span> all_data[<span class="st">'latvar'</span>]</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> all_data[<span class="st">'data'</span>]</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>mu0abs <span class="op">=</span> latvar[<span class="st">'mu0_abs'</span>]</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>theta_pair <span class="op">=</span> (<span class="dv">1</span>,<span class="dv">0</span>)<span class="co">#latvar['theta_pair']</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="co">#get the experimental parameters thetas to weight on the parameter space distance by alpha and have a smooter clustering</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>alpha <span class="op">=</span> <span class="fl">0.001</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>theta1 <span class="op">=</span> dataset.thetas[theta_pair[<span class="dv">0</span>]]</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>theta2 <span class="op">=</span> dataset.thetas[theta_pair[<span class="dv">1</span>]]</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>theta1_norm <span class="op">=</span> (theta1 <span class="op">-</span> jnp.<span class="bu">min</span>(theta1)) <span class="op">/</span> (jnp.<span class="bu">max</span>(theta1) <span class="op">-</span> jnp.<span class="bu">min</span>(theta1))</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>theta2_norm <span class="op">=</span> (theta2 <span class="op">-</span> jnp.<span class="bu">min</span>(theta2)) <span class="op">/</span> (jnp.<span class="bu">max</span>(theta2) <span class="op">-</span> jnp.<span class="bu">min</span>(theta2))</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a><span class="co">#vector to perform the GMM one</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> jnp.array([mu0abs.reshape(<span class="op">-</span><span class="dv">1</span>), alpha<span class="op">*</span>jnp.tile(theta1_norm[:,<span class="va">None</span>], reps<span class="op">=</span>(jnp.size(theta2_norm),)).reshape(<span class="op">-</span><span class="dv">1</span>), alpha<span class="op">*</span>jnp.tile(theta2_norm[<span class="va">None</span>, :], reps<span class="op">=</span>(jnp.size(theta1_norm),)).reshape(<span class="op">-</span><span class="dv">1</span>)]).transpose()</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> n_components <span class="kw">in</span> [<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>]:</span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">'GMM with n_components: </span><span class="sc">{}</span><span class="st">'</span>.<span class="bu">format</span>(n_components))</span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>    clusterer <span class="op">=</span> GaussianMixture(</span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>                                n_components<span class="op">=</span>n_components,</span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>                                max_iter<span class="op">=</span><span class="dv">500</span>,</span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>                                init_params<span class="op">=</span><span class="st">"kmeans"</span></span>
+<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a>                            )</span>
+<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>    clusterer.fit(X, key<span class="op">=</span>jax.random.PRNGKey(<span class="dv">4362</span>))</span>
+<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-33"><a href="#cb23-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-34"><a href="#cb23-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-35"><a href="#cb23-35" aria-hidden="true" tabindex="-1"></a>    classes <span class="op">=</span> clusterer.predict(X).reshape((jnp.size(theta1),jnp.size(theta2)))</span>
+<span id="cb23-36"><a href="#cb23-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-37"><a href="#cb23-37" aria-hidden="true" tabindex="-1"></a>    final_classes <span class="op">=</span> jnp.zeros((jnp.size(theta1),jnp.size(theta2)))</span>
+<span id="cb23-38"><a href="#cb23-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(jnp.size(theta1)):</span>
+<span id="cb23-39"><a href="#cb23-39" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(jnp.size(theta2)):</span>
+<span id="cb23-40"><a href="#cb23-40" aria-hidden="true" tabindex="-1"></a>        v, c <span class="op">=</span> jnp.unique_counts(classes[i,j])</span>
+<span id="cb23-41"><a href="#cb23-41" aria-hidden="true" tabindex="-1"></a>        final_classes <span class="op">=</span> final_classes.at[i,j].<span class="bu">set</span>(v[jnp.argmax(c)])</span>
+<span id="cb23-42"><a href="#cb23-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-43"><a href="#cb23-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-44"><a href="#cb23-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-45"><a href="#cb23-45" aria-hidden="true" tabindex="-1"></a>    fig_shape <span class="op">=</span> (<span class="bu">len</span>(theta1)<span class="op">/</span><span class="dv">5</span>, <span class="bu">len</span>(theta2)<span class="op">/</span><span class="dv">5</span>)</span>
+<span id="cb23-46"><a href="#cb23-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-47"><a href="#cb23-47" aria-hidden="true" tabindex="-1"></a>    plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb23-48"><a href="#cb23-48" aria-hidden="true" tabindex="-1"></a>    plt.figure(figsize<span class="op">=</span>fig_shape,dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb23-49"><a href="#cb23-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-50"><a href="#cb23-50" aria-hidden="true" tabindex="-1"></a>    plt.imshow(jnp.flipud(final_classes), aspect<span class="op">=</span><span class="st">'auto'</span>)</span>
+<span id="cb23-51"><a href="#cb23-51" aria-hidden="true" tabindex="-1"></a>    cbar <span class="op">=</span> plt.colorbar(orientation<span class="op">=</span><span class="st">"horizontal"</span>, pad<span class="op">=</span><span class="fl">0.03</span>, location<span class="op">=</span><span class="st">"top"</span>)</span>
+<span id="cb23-52"><a href="#cb23-52" aria-hidden="true" tabindex="-1"></a>    cbar.set_label(<span class="vs">r'classification: #classes={}'</span>.<span class="bu">format</span>(n_components))</span>
+<span id="cb23-53"><a href="#cb23-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-54"><a href="#cb23-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-55"><a href="#cb23-55" aria-hidden="true" tabindex="-1"></a>    plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="ch">\t</span><span class="vs">heta_{}</span><span class="dv">$</span><span class="vs">'</span>.<span class="bu">format</span>(theta_pair[<span class="dv">0</span>]))</span>
+<span id="cb23-56"><a href="#cb23-56" aria-hidden="true" tabindex="-1"></a>    plt.xlabel(<span class="vs">r'</span><span class="dv">$</span><span class="ch">\t</span><span class="vs">heta_{}</span><span class="dv">$</span><span class="vs">'</span>.<span class="bu">format</span>(theta_pair[<span class="dv">1</span>]))</span>
+<span id="cb23-57"><a href="#cb23-57" aria-hidden="true" tabindex="-1"></a>    plt.yticks([i <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>,<span class="bu">len</span>(theta1),<span class="bu">len</span>(theta1)<span class="op">//</span><span class="dv">4</span>)], [<span class="bu">str</span>(theta1[<span class="bu">len</span>(theta1)<span class="op">-</span>i])[:<span class="dv">3</span>] <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>,<span class="bu">len</span>(theta1),<span class="bu">len</span>(theta1)<span class="op">//</span><span class="dv">4</span>)])</span>
+<span id="cb23-58"><a href="#cb23-58" aria-hidden="true" tabindex="-1"></a>    plt.xticks([i <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>,<span class="bu">len</span>(theta2)<span class="op">+</span><span class="dv">1</span>,<span class="bu">len</span>(theta2)<span class="op">//</span><span class="dv">4</span>)], [<span class="bu">str</span>(theta2[i])[:<span class="dv">3</span>] <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>,<span class="bu">len</span>(theta2)<span class="op">+</span><span class="dv">1</span>,<span class="bu">len</span>(theta2)<span class="op">//</span><span class="dv">4</span>)])</span>
+<span id="cb23-59"><a href="#cb23-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-60"><a href="#cb23-60" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>GMM with n_components: 2</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="J1J2_tuto1_VAE_files/figure-html/cell-22-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>GMM with n_components: 3</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="J1J2_tuto1_VAE_files/figure-html/cell-22-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>GMM with n_components: 4</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="J1J2_tuto1_VAE_files/figure-html/cell-22-output-6.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>GMM with n_components: 5</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="J1J2_tuto1_VAE_files/figure-html/cell-22-output-8.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>To determine the optimal number of clusters, <code>qdisc.clustering</code> provides the <a href="https://qic-ibk.github.io/qdisc/lib_nbs/clustering/core.html#select_n_components"><code>select_n_components()</code></a> function, used as shown below:</p>
+<div id="0fdf0dd1" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.clustering.core <span class="im">import</span> select_n_components</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co">## Can also compute some metrics to evaluate the optimal number of class</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>ks <span class="op">=</span> <span class="bu">range</span>(<span class="dv">2</span>, <span class="dv">7</span>)  <span class="co"># ranges of n_components tested</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> select_n_components(X, ks, n_init<span class="op">=</span><span class="dv">5</span>, max_iter<span class="op">=</span><span class="dv">500</span>, random_seed<span class="op">=</span><span class="dv">2546</span>)</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="co"># collect bic/aic/loglikelihood</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>bics <span class="op">=</span> jnp.array([results[k][<span class="st">'metrics'</span>][<span class="st">'bic'</span>] <span class="cf">for</span> k <span class="kw">in</span> ks])</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>aics <span class="op">=</span> jnp.array([results[k][<span class="st">'metrics'</span>][<span class="st">'aic'</span>] <span class="cf">for</span> k <span class="kw">in</span> ks])</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>avg_lls <span class="op">=</span> jnp.array([results[k][<span class="st">'metrics'</span>][<span class="st">'avg_log_likelihood'</span>] <span class="cf">for</span> k <span class="kw">in</span> ks])</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a><span class="co"># K that minimizes BIC/AIC</span></span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>best_k_bic <span class="op">=</span> ks[jnp.argmin(bics)]</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>best_k_aic <span class="op">=</span> ks[jnp.argmin(aics)]</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Best K (BIC):"</span>, best_k_bic, <span class="st">"Best K (AIC):"</span>, best_k_aic)</span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a><span class="co">#3 is indeed the best (neel, pola, striped), the fourth one is a phase boundary (can also be interesting)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Trying K=2
+Trying K=3
+Trying K=4
+Trying K=5
+Trying K=6
+Best K (BIC): 3 Best K (AIC): 5</code></pre>
+</div>
+</div>
+<div id="31bad41e" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co">## plot of each metrics</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib <span class="im">import</span> pyplot <span class="im">as</span> plt</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, k <span class="kw">in</span> <span class="bu">enumerate</span>(ks):</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">print</span>(<span class="st">'results GMM n_components: </span><span class="sc">{}</span><span class="st">'</span>.<span class="bu">format</span>(k))</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  <span class="bu">print</span>(<span class="st">'BIC: </span><span class="sc">{}</span><span class="st">'</span>.<span class="bu">format</span>(bics[i]))</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>  <span class="bu">print</span>(<span class="st">'AIC: </span><span class="sc">{}</span><span class="st">'</span>.<span class="bu">format</span>(aics[i]))</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>  <span class="bu">print</span>(<span class="st">'avg_log_likelihood: </span><span class="sc">{}</span><span class="st">'</span>.<span class="bu">format</span>(avg_lls[i]))</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">4</span>),dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>plt.plot(ks, bics, <span class="st">'o-'</span>, label<span class="op">=</span><span class="st">'BIC'</span>)</span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>plt.plot(ks, aics, <span class="st">'o-'</span>, label<span class="op">=</span><span class="st">'AIC'</span>)</span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a><span class="co">#plt.plot(ks, avg_lls, 'o-', label='avg_log_likelihood')</span></span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'n_components'</span>)</span>
+<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'score'</span>)</span>
+<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb30-27"><a href="#cb30-27" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">4</span>),dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb30-28"><a href="#cb30-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-29"><a href="#cb30-29" aria-hidden="true" tabindex="-1"></a>plt.plot(ks, avg_lls, <span class="st">'o-'</span>, label<span class="op">=</span><span class="st">'avg_log_likelihood'</span>)</span>
+<span id="cb30-30"><a href="#cb30-30" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'n_components'</span>)</span>
+<span id="cb30-31"><a href="#cb30-31" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'avg_log_likelihood'</span>)</span>
+<span id="cb30-32"><a href="#cb30-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-33"><a href="#cb30-33" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb30-34"><a href="#cb30-34" aria-hidden="true" tabindex="-1"></a><span class="co">#3 also leads to a big increase og log_likelihood</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>results GMM n_components: 2
+BIC: -9700.291536668057
+AIC: -9777.056376182329
+avg_log_likelihood: 11.684590924026583
+results GMM n_components: 3
+BIC: -9810.477975436434
+AIC: -9927.645362063478
+avg_log_likelihood: 11.88767305007557
+results GMM n_components: 4
+BIC: -9763.699312877627
+AIC: -9921.269246617445
+avg_log_likelihood: 11.903891960258864
+results GMM n_components: 5
+BIC: -9738.231419973254
+AIC: -9936.203900825847
+avg_log_likelihood: 11.945480834316486
+results GMM n_components: 6
+BIC: -9683.22510978266
+AIC: -9921.600137748026
+avg_log_likelihood: 11.951904925890508</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="J1J2_tuto1_VAE_files/figure-html/cell-24-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="J1J2_tuto1_VAE_files/figure-html/cell-24-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="symbolic-regression" class="level2">
+<h2 class="anchored" data-anchor-id="symbolic-regression">Symbolic regression</h2>
+<p>For the <strong>symbolic regression (SR)</strong> tools implemented in <code>qdisc</code>, see the second tutorial notebook.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/qic-ibk\.github\.io\/qdisc\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/qic-ibk/qdisc/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

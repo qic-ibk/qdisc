@@ -1,0 +1,2036 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Cluster Ising model – QDisc</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-7d0f2692033adbfcebf02552a4d09f1a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Cluster Ising model – QDisc">
+<meta property="og:description" content="">
+<meta property="og:image" content="https://qic-ibk.github.io/qdisc/examples/qdisc_ClusterIsing_files/figure-html/cell-8-output-1.png">
+<meta property="og:site_name" content="QDisc">
+<meta property="og:image:height" content="383">
+<meta property="og:image:width" content="495">
+<meta name="twitter:title" content="Cluster Ising model – QDisc">
+<meta name="twitter:description" content="">
+<meta name="twitter:image" content="https://qic-ibk.github.io/qdisc/examples/qdisc_ClusterIsing_files/figure-html/cell-8-output-1.png">
+<meta name="twitter:image-height" content="383">
+<meta name="twitter:image-width" content="495">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../figs/qdisc_logo.png" alt="" class="navbar-logo light-content">
+    <img src="../figs/qdisc_logo.png" alt="" class="navbar-logo dark-content">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">QDisc</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/qic-ibk/qdisc"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../examples/index_examples.html">Examples</a></li><li class="breadcrumb-item"><a href="../examples/qdisc_clusterising.html">Cluster Ising model</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Get started</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Examples</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/index_examples.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Readme</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/qdisc_rydberg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Rydberg atoms</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/qdisc_clusterising.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Cluster Ising model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/qdisc_fkm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Falinov-Kimbal model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">Documentation</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/index_docs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Readme</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/clustering/core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/dataset/core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Dataset</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/nn/core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Neural networks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/sr/core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Symbolic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lib_nbs/vae/core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">VAE</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">Tutorials</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/j1j2_tuto1_vae.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Training VAEs on quantum data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/j1j2_tuto2_sr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Extracting order parameters with SR</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#dataset-and-training" id="toc-dataset-and-training" class="nav-link active" data-scroll-target="#dataset-and-training">dataset and training</a></li>
+  <li><a href="#reconstruction-of-physical-quantities" id="toc-reconstruction-of-physical-quantities" class="nav-link" data-scroll-target="#reconstruction-of-physical-quantities">Reconstruction of physical quantities</a></li>
+  <li><a href="#symbolic-regression" id="toc-symbolic-regression" class="nav-link" data-scroll-target="#symbolic-regression">Symbolic regression</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/qic-ibk/qdisc/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="qdisc_clusterising.html.md"><i class="bi bi-file-code"></i>CommonMark</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../examples/index_examples.html">Examples</a></li><li class="breadcrumb-item"><a href="../examples/qdisc_clusterising.html">Cluster Ising model</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Cluster Ising model</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<p>This notebook presents how to use QDisc to reproduce the results on the classical shadows of the cluster Ising model. Its Hamiltoinian is given by</p>
+<p><span class="math display">\[
+H_{\mathrm{cluster}}
+=  -\sum_{i=1}^{N} \sigma^z_{i-1} \sigma^x_i \sigma^z_{i+1}
+   - h_1 \sum_{i=1}^{N} \sigma^x_i
+    -h_2 \sum_{i=1}^{N-1}\sigma_i^x\sigma_{i+1}^x
+\]</span></p>
+<p>where <span class="math inline">\(\sigma^x_i,\sigma^y_i,\sigma^z_i\)</span> are Pauli operators acting on site <span class="math inline">\(i\)</span>. We consider open boundary conditions defined by <span class="math inline">\(\sigma^z_0 = \sigma^z_{N+1} = \mathbb{1}\)</span>. We sweep the transverse-like field <span class="math inline">\(h_1\in[0.05,\,1.20]\)</span> and the Ising coupling <span class="math inline">\(h_2\in[-1.5,\,1.5]\)</span> to probe the competition between the cluster term, the transverse-field (paramagnetic) term, and nearest-neighbor Ising correlations.</p>
+<section id="dataset-and-training" class="level2">
+<h2 class="anchored" data-anchor-id="dataset-and-training">dataset and training</h2>
+<p>The dataset is produced by first computing the exact ground state wavefunction using Netket, similar to the J1J2 model (see tutorial). Then, classical shadows are generated by randomly sampling the Paulis and their respective outcomes using the probabilities given by the wavefunction. This is done using the <a href="https://qic-ibk.github.io/qdisc/lib_nbs/dataset/core.html#get_classical_shadow"><code>get_classical_shadow()</code></a> function from <code>QDisc.dataset</code>.</p>
+<div id="ff0d7524" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">## loading the exact wavefunction ##</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'data_exact2_clusterN15.pkl'</span>, <span class="st">'rb'</span>) <span class="im">as</span> f:</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    data_exact <span class="op">=</span> pickle.load(f)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>wave_fcts <span class="op">=</span> data_exact[<span class="st">'wave_fcts'</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="4c0e1aa3-a54d-4ee9-a330-814be039094e" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">## generating classical shadows across the parameter space ##</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.dataset.core <span class="im">import</span> get_classical_shadow</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> <span class="dv">15</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>all_h1 <span class="op">=</span> jnp.arange(<span class="fl">0.05</span>, <span class="fl">1.25</span>, <span class="fl">0.05</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>all_h2 <span class="op">=</span> jnp.arange(<span class="op">-</span><span class="fl">1.5</span>, <span class="fl">1.5</span>, <span class="fl">0.1</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>num_sample_per_params <span class="op">=</span> <span class="dv">2000</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> jnp.zeros([jnp.size(all_h1), jnp.size(all_h2), num_sample_per_params, <span class="dv">2</span><span class="op">*</span>N])</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> jax.random.PRNGKey(<span class="dv">12345</span>)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>wave_fcts <span class="op">=</span> data_exact[<span class="st">'wave_fcts'</span>]</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, h1 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h1):</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j, h2 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h2):</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>      key, subkey <span class="op">=</span> jax.random.split(key)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>      s <span class="op">=</span> get_classical_shadow(psi<span class="op">=</span>wave_fcts.astype(<span class="st">'float32'</span>)[i,j], num_shots<span class="op">=</span>num_sample_per_params, N<span class="op">=</span><span class="dv">15</span>, rng_key<span class="op">=</span>subkey)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>      data <span class="op">=</span> data.at[i,j].<span class="bu">set</span>(s)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> data.astype(<span class="st">'int32'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="2bb0c4b1" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">## casting everything in a QDisc Dataset object ##</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.dataset.core <span class="im">import</span> Dataset</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> Dataset(data<span class="op">=</span>data, thetas<span class="op">=</span>[all_h1, all_h2], data_type<span class="op">=</span><span class="st">'shadow'</span>, local_dimension<span class="op">=</span><span class="dv">2</span>, local_states<span class="op">=</span>jnp.array([<span class="dv">0</span>,<span class="dv">1</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="743d8a05" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">## We use the transformer architecture for the encoder and decoder ##</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.nn.core <span class="im">import</span> Transformer_encoder</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.nn.core <span class="im">import</span> Transformer_decoder</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.vae.core <span class="im">import</span> VAEmodel</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>encoder <span class="op">=</span> Transformer_encoder(latent_dim<span class="op">=</span><span class="dv">5</span>, d_model<span class="op">=</span><span class="dv">16</span>, num_heads<span class="op">=</span><span class="dv">2</span>, num_layers<span class="op">=</span><span class="dv">3</span>, data_type<span class="op">=</span><span class="st">'shadow'</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>decoder <span class="op">=</span> Transformer_decoder(d_model<span class="op">=</span><span class="dv">32</span>, num_heads<span class="op">=</span><span class="dv">4</span>, num_layers<span class="op">=</span><span class="dv">3</span>, data_type<span class="op">=</span><span class="st">'shadow'</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>myvae <span class="op">=</span> VAEmodel(encoder<span class="op">=</span>encoder, decoder<span class="op">=</span>decoder)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="7adccc06" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">## Training ##</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.vae.core <span class="im">import</span> VAETrainer</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>myvaetrainer <span class="op">=</span> VAETrainer(model<span class="op">=</span>myvae, dataset<span class="op">=</span>dataset)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> jax.random.PRNGKey(<span class="dv">67483</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>num_epochs <span class="op">=</span> <span class="dv">1000</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>myvaetrainer.train(num_epochs<span class="op">=</span>num_epochs, batch_size<span class="op">=</span><span class="dv">10000</span>, beta<span class="op">=</span><span class="fl">0.65</span>, gamma<span class="op">=</span><span class="fl">0.</span>, key<span class="op">=</span>key, printing_rate<span class="op">=</span><span class="dv">50</span>, re_shuffle<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Start training...
+epoch=0 step=0 loss=12.347687967698652 recon=10.325565010988841
+logvar=[-0.33022366  0.0294409   0.55953395  0.33956828 -0.45126546]
+epoch=50 step=0 loss=6.487059499221326 recon=2.747702826860476
+logvar=[ 1.60891616e-03 -3.79395645e+00 -5.48110009e+00 -2.10693801e+00
+  5.09911842e-03]
+epoch=100 step=0 loss=6.315230991856255 recon=2.176506179580368
+logvar=[-2.18324061e-04 -4.26282124e+00 -5.74415987e+00 -2.89566177e+00
+  4.52455450e-04]
+epoch=150 step=0 loss=6.351402070119837 recon=2.0416517952765454
+logvar=[-5.49586326e-03 -4.39419643e+00 -5.77676345e+00 -3.12499072e+00
+ -1.05409432e-03]
+epoch=200 step=0 loss=6.185613846957846 recon=1.7170996274912897
+logvar=[-1.38495516e-03 -4.54206555e+00 -5.94358400e+00 -3.26664121e+00
+ -4.34269675e-03]
+epoch=250 step=0 loss=6.050364744366315 recon=1.5615449391153347
+logvar=[-1.69562970e-03 -4.60882494e+00 -5.98703399e+00 -3.21580383e+00
+ -2.02698014e-03]
+epoch=300 step=0 loss=6.036482538330654 recon=1.4641840750033226
+logvar=[-3.20047955e-03 -4.75379596e+00 -6.11155958e+00 -3.27105191e+00
+ -3.88773909e-03]
+epoch=350 step=0 loss=5.979178257724279 recon=1.36887668916349
+logvar=[-3.00514521e-03 -4.81439014e+00 -6.02593182e+00 -3.20735086e+00
+  3.48975305e-04]
+epoch=400 step=0 loss=6.009092607946348 recon=1.3728353644820985
+logvar=[-4.44492938e-03 -4.86656668e+00 -6.14489616e+00 -3.26099531e+00
+ -1.30218320e-03]
+epoch=450 step=0 loss=6.0220570107792675 recon=1.3389792237164384
+logvar=[-1.68795052e-03 -4.92355700e+00 -6.21856915e+00 -3.31008028e+00
+ -2.30367859e-03]
+epoch=500 step=0 loss=5.878122122223036 recon=1.1998018678705789
+logvar=[-1.78353210e-03 -4.95608013e+00 -6.17991373e+00 -3.31688653e+00
+ -8.28107691e-04]
+epoch=550 step=0 loss=5.8924336223879115 recon=1.1629692225343342
+logvar=[ 1.08417498e-03 -4.99906500e+00 -6.19032347e+00 -3.34672249e+00
+ -1.57586230e-03]
+epoch=600 step=0 loss=5.869670156405646 recon=1.1941889331655504
+logvar=[-4.22815722e-03 -4.98837830e+00 -6.16033137e+00 -3.33722931e+00
+ -1.55730017e-03]
+epoch=650 step=0 loss=5.886251256088388 recon=1.1376111060560081
+logvar=[ 5.63655146e-04 -4.94382154e+00 -6.10970727e+00 -3.32718383e+00
+  1.95764407e-03]
+epoch=700 step=0 loss=5.899222298427608 recon=1.1503704721551113
+logvar=[-6.42165385e-05 -4.99184416e+00 -6.17988897e+00 -3.41264614e+00
+ -2.59477361e-03]
+epoch=750 step=0 loss=5.91955405139542 recon=1.1814203181427434
+logvar=[-1.18126475e-03 -4.99585559e+00 -6.15080361e+00 -3.34256863e+00
+  2.21841012e-05]
+epoch=800 step=0 loss=5.8189250483184525 recon=1.130771261113764
+logvar=[ 2.39445420e-03 -4.95950694e+00 -6.15326103e+00 -3.38301455e+00
+ -1.38216248e-03]
+epoch=850 step=0 loss=5.81849541244368 recon=1.1504030272990962
+logvar=[-8.11978773e-04 -4.94414587e+00 -6.05133513e+00 -3.36805270e+00
+ -1.21090328e-03]
+epoch=900 step=0 loss=5.801429250694841 recon=1.0742724399110732
+logvar=[ 1.54916973e-03 -4.97436513e+00 -6.08436959e+00 -3.45073402e+00
+  1.43229962e-03]
+epoch=950 step=0 loss=5.78974498377786 recon=1.0764884790490885
+logvar=[-1.32754115e-03 -4.94436411e+00 -6.00759037e+00 -3.45056866e+00
+ -1.69056105e-03]
+Training finished.</code></pre>
+</div>
+</div>
+<div id="2f86d0ef-0de3-4dcf-b80a-5d4730fe7a1f" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#load the trained model</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.vae.core <span class="im">import</span> VAETrainer</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'clusterIsingN15_data_cpVAE2_QDisc.pkl'</span>, <span class="st">'rb'</span>) <span class="im">as</span> f:</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    all_data <span class="op">=</span> pickle.load(f)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>myvaetrainer <span class="op">=</span> VAETrainer(model<span class="op">=</span>myvae, dataset<span class="op">=</span>dataset)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>myvaetrainer.init_state(jax.random.PRNGKey(<span class="dv">0</span>), dataset.data[<span class="dv">0</span>,<span class="dv">0</span>])</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>myvaetrainer.state <span class="op">=</span> myvaetrainer.state.replace(params<span class="op">=</span>all_data[<span class="st">'params'</span>])</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>num_epochs <span class="op">=</span> <span class="dv">1000</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>myvaetrainer.history_recon <span class="op">=</span> all_data[<span class="st">'history_recon'</span>]</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>myvaetrainer.history_logvar <span class="op">=</span> all_data[<span class="st">'history_logvar'</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="381e22e4-ea8e-40d7-b357-854834ebe3dc" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">## plot the training ##</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>myvaetrainer.plot_training(num_epochs <span class="op">=</span> num_epochs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-8-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-8-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="ca24c2c1" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">## compute and plot the representation ##</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>myvaetrainer.compute_and_plot_repr2d(subplot<span class="op">=</span><span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-9-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-9-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-9-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-9-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-9-output-5.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-9-output-6.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-9-output-7.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-9-output-8.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-9-output-9.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-9-output-10.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-9-output-11.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-9-output-12.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-9-output-13.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-9-output-14.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-9-output-15.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="47b28ea8-4c87-4bbf-9f60-85c4bab560d1" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># or plot using subplots (more compact)</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>myvaetrainer.plot_repr2d(subplot<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-10-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="799692fb" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>all_data <span class="op">=</span> myvaetrainer.get_data()</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'clusterIsingN15_data_cpVAE2_QDisc.pkl'</span>, <span class="st">'wb'</span>) <span class="im">as</span> f:</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    pickle.dump(all_data, f)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="reconstruction-of-physical-quantities" class="level2">
+<h2 class="anchored" data-anchor-id="reconstruction-of-physical-quantities">Reconstruction of physical quantities</h2>
+<p>In this section, we analyze how the <strong>cpVAE can reconstruct physical quantities</strong>, such as energy and stabilizers. We first reconstruct each shadows and then compute the <strong>Median-of-means estimate</strong> of the various observables.</p>
+<div id="cdd283ab" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">## shadows reconstruction, from testset random measurements ##</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co"># generate random measurement</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> <span class="dv">15</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>all_h1 <span class="op">=</span> jnp.arange(<span class="fl">0.05</span>, <span class="fl">1.25</span>, <span class="fl">0.05</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>all_h2 <span class="op">=</span> jnp.arange(<span class="op">-</span><span class="fl">1.5</span>, <span class="fl">1.5</span>, <span class="fl">0.1</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>num_sample_per_params <span class="op">=</span> <span class="dv">2000</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>test_data <span class="op">=</span> jnp.zeros([jnp.size(all_h1), jnp.size(all_h2), num_sample_per_params, <span class="dv">2</span><span class="op">*</span>N])</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> jax.random.PRNGKey(<span class="dv">7654</span>)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>wave_fcts <span class="op">=</span> data_exact[<span class="st">'wave_fcts'</span>]</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, h1 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h1):</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j, h2 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h2):</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>      <span class="co">#we dont need the measurement output but just the random basis. Easier to just use the function already inplemented and ignore the output</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>      key, subkey <span class="op">=</span> jax.random.split(key)</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>      s <span class="op">=</span> get_classical_shadow(psi<span class="op">=</span>wave_fcts.astype(<span class="st">'float32'</span>)[i,j], num_shots<span class="op">=</span>num_sample_per_params, N<span class="op">=</span><span class="dv">15</span>, rng_key<span class="op">=</span>subkey)</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>      test_data <span class="op">=</span> test_data.at[i,j].<span class="bu">set</span>(s)</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>test_data <span class="op">=</span> test_data.astype(<span class="st">'int32'</span>)</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="co"># use the decoder to predict the outcomes of each shadows</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> jax.random.PRNGKey(<span class="dv">347856</span>)</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>S_reconstructed <span class="op">=</span> jnp.zeros_like(test_data)</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, h1 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h1):</span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j, h2 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h2):</span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>        d <span class="op">=</span> test_data[i,j]</span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>        key, subkey <span class="op">=</span> jax.random.split(key)</span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>        s <span class="op">=</span> myvaetrainer.reconstruct_sample(d, subkey)</span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>        S_reconstructed <span class="op">=</span> S_reconstructed.at[i,j].<span class="bu">set</span>(s)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="1dcc1738" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">## estimate of the energy ##</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="at">@jax.jit</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sqe_cal_energy(sqe: jnp.ndarray,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>                   J_cluster: <span class="bu">float</span>,</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>                   h1: <span class="bu">float</span>,</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>                   h2: <span class="bu">float</span>) <span class="op">-&gt;</span> jnp.ndarray:</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">    Estimate ⟨H⟩ from a batch of classical‐shadows `sqe` of shape (T, 2*num_bits),</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">    where columns alternate (basis, outcome), with basis encoded {X→2, Y→3, Z→4}</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">    and outcome ∈ {0,1}. Returns the average energy over the batch.</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># split into per‐site basis and outcome</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    basis   <span class="op">=</span> sqe[:, <span class="dv">0</span>::<span class="dv">2</span>]   <span class="co"># shape (T, num_bits)</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    outcome <span class="op">=</span> sqe[:, <span class="dv">1</span>::<span class="dv">2</span>]   <span class="co"># shape (T, num_bits)</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># single‐shot estimators: ±3 for X and Z, zero otherwise</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    expX <span class="op">=</span> jnp.where(basis <span class="op">==</span> <span class="dv">2</span>,</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>                     jnp.where(outcome <span class="op">==</span> <span class="dv">1</span>, <span class="op">+</span><span class="fl">3.0</span>, <span class="op">-</span><span class="fl">3.0</span>),</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>                     <span class="fl">0.0</span>)</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    expZ <span class="op">=</span> jnp.where(basis <span class="op">==</span> <span class="dv">4</span>,</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>                     jnp.where(outcome <span class="op">==</span> <span class="dv">1</span>, <span class="op">+</span><span class="fl">3.0</span>, <span class="op">-</span><span class="fl">3.0</span>),</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>                     <span class="fl">0.0</span>)</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># two‐site and three‐site terms</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    expXX  <span class="op">=</span> expX[:, :<span class="op">-</span><span class="dv">1</span>] <span class="op">*</span> expX[:, <span class="dv">1</span>:]          <span class="co"># shape (T, num_bits-1)</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>    expZXZ <span class="op">=</span> expZ[:, :<span class="op">-</span><span class="dv">2</span>] <span class="op">*</span> expX[:, <span class="dv">1</span>:<span class="op">-</span><span class="dv">1</span>] <span class="op">*</span> expZ[:, <span class="dv">2</span>:]  <span class="co"># shape (T, num_bits-2)</span></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># sums per snapshot</span></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>    sumZXZ <span class="op">=</span> expZXZ.<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">1</span>)   <span class="co"># (T,)</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>    sumX   <span class="op">=</span> expX.<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">1</span>)     <span class="co"># (T,)</span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>    sumXX  <span class="op">=</span> expXX.<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">1</span>)    <span class="co"># (T,)</span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>    <span class="co"># instantaneous energies, then mean over T</span></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>    energies <span class="op">=</span> <span class="op">-</span>sumZXZ <span class="op">*</span> J_cluster <span class="op">-</span> sumX <span class="op">*</span> h1 <span class="op">-</span> sumXX <span class="op">*</span> h2</span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> energies.mean()</span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> MoM_energy(J_cluster: <span class="bu">float</span>,</span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>               h1: <span class="bu">float</span>,</span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>               h2: <span class="bu">float</span>,</span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>               sqe: jnp.ndarray,</span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>               num_parts: <span class="bu">int</span>) <span class="op">-&gt;</span> jnp.ndarray:</span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a><span class="co">    Median‐of‐means estimate of ⟨H⟩ from shadows `sqe` of shape (T, 2*num_bits),</span></span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a><span class="co">    partitioned into `num_parts` blocks of equal size.</span></span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>    T <span class="op">=</span> sqe.shape[<span class="dv">0</span>]</span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a>    part_size <span class="op">=</span> T <span class="op">//</span> num_parts</span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> part_size <span class="op">*</span> num_parts <span class="op">!=</span> T:</span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="ss">f"T=</span><span class="sc">{</span>T<span class="sc">}</span><span class="ss"> not divisible by num_parts=</span><span class="sc">{</span>num_parts<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a>    <span class="co"># compute block‐means</span></span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a>    means <span class="op">=</span> []</span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(num_parts):</span>
+<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a>        block <span class="op">=</span> sqe[k<span class="op">*</span>part_size:(k<span class="op">+</span><span class="dv">1</span>)<span class="op">*</span>part_size]</span>
+<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a>        means.append(sqe_cal_energy(block, J_cluster, h1, h2))</span>
+<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a>    means <span class="op">=</span> jnp.stack(means)  <span class="co"># (num_parts,)</span></span>
+<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a>    <span class="co"># return the median of the block‐means</span></span>
+<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> jnp.median(means)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="f84ae223" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>energy_from_dataset <span class="op">=</span> jnp.zeros((<span class="bu">len</span>(all_h1),<span class="bu">len</span>(all_h2)))</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, h1 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h1):</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j, h2 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h2):</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>        energy_from_dataset <span class="op">=</span> energy_from_dataset.at[i,j].<span class="bu">set</span>(MoM_energy(J_cluster<span class="op">=</span><span class="fl">1.0</span>, h1<span class="op">=</span>h1, h2<span class="op">=</span>h2, sqe<span class="op">=</span>dataset.data[i,j], num_parts<span class="op">=</span><span class="dv">10</span>))</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>energy_recon <span class="op">=</span> jnp.zeros((<span class="bu">len</span>(all_h1),<span class="bu">len</span>(all_h2)))</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, h1 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h1):</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j, h2 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h2):</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>        energy_recon <span class="op">=</span> energy_recon.at[i,j].<span class="bu">set</span>(MoM_energy(J_cluster<span class="op">=</span><span class="fl">1.0</span>, h1<span class="op">=</span>h1, h2<span class="op">=</span>h2, sqe<span class="op">=</span>S_reconstructed[i,j], num_parts<span class="op">=</span><span class="dv">10</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="105b5b62" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>exact_energies <span class="op">=</span> data_exact[<span class="st">'energies'</span>]</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co">#energy_from_dataset = clusterIsingN15_VAE2_reconstruction['energy_from_dataset']</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co">#energy_recon = clusterIsingN15_VAE2_reconstruction['energy_recon']</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>energy_max <span class="op">=</span> jnp.<span class="bu">max</span>(jnp.array([jnp.<span class="bu">max</span>(exact_energies),jnp.<span class="bu">max</span>(energy_from_dataset),jnp.<span class="bu">max</span>(energy_recon)]))</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>energy_min <span class="op">=</span> jnp.<span class="bu">min</span>(jnp.array([jnp.<span class="bu">min</span>(exact_energies),jnp.<span class="bu">min</span>(energy_from_dataset),jnp.<span class="bu">min</span>(energy_recon)]))</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>,<span class="dv">5</span>),dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.rot90(exact_energies),cmap<span class="op">=</span>cmap_green3, vmin<span class="op">=</span>energy_min, vmax<span class="op">=</span>energy_max)</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>plt.colorbar()</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="vs">r'Exact energy'</span>)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h_1</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h_2</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>plt.xticks([<span class="dv">0</span>,<span class="dv">10</span>,<span class="dv">20</span>], [<span class="dv">0</span>,<span class="fl">0.5</span>,<span class="dv">1</span>])</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>plt.yticks([<span class="dv">5</span>,<span class="dv">15</span>,<span class="dv">25</span>], [<span class="op">-</span><span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>])</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>,<span class="dv">5</span>),dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.rot90(energy_from_dataset),cmap<span class="op">=</span>cmap_green3, vmin<span class="op">=</span>energy_min, vmax<span class="op">=</span>energy_max)</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>plt.colorbar()</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="vs">r'Dataset energy'</span>)</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h_1</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h_2</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>plt.xticks([<span class="dv">0</span>,<span class="dv">10</span>,<span class="dv">20</span>], [<span class="dv">0</span>,<span class="fl">0.5</span>,<span class="dv">1</span>])</span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>plt.yticks([<span class="dv">5</span>,<span class="dv">15</span>,<span class="dv">25</span>], [<span class="op">-</span><span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>])</span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>,<span class="dv">5</span>),dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.rot90(energy_recon),cmap<span class="op">=</span>cmap_green3, vmin<span class="op">=</span>energy_min, vmax<span class="op">=</span>energy_max)</span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>plt.colorbar()</span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="vs">r'Recon</span><span class="dv">.</span><span class="vs"> energy'</span>)</span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h_1</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h_2</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a>plt.xticks([<span class="dv">0</span>,<span class="dv">10</span>,<span class="dv">20</span>], [<span class="dv">0</span>,<span class="fl">0.5</span>,<span class="dv">1</span>])</span>
+<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a>plt.yticks([<span class="dv">5</span>,<span class="dv">15</span>,<span class="dv">25</span>], [<span class="op">-</span><span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>])</span>
+<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-15-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-15-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-15-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="a7c0cf0f" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>energies <span class="op">=</span> {}</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>energies[<span class="st">'exact'</span>] <span class="op">=</span> exact_energies</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>energies[<span class="st">'dataset'</span>] <span class="op">=</span> energy_from_dataset</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>energies[<span class="st">'recon'</span>] <span class="op">=</span> energy_recon</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>data[<span class="st">'energies'</span>] <span class="op">=</span> energies</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="50067a2f" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">## same for the stabilizers ##</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="at">@jax.jit</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sqe_cal_stab(sqe: jnp.ndarray) <span class="op">-&gt;</span> jnp.ndarray:</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># split into per‐site basis and outcome</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    basis   <span class="op">=</span> sqe[:, <span class="dv">0</span>::<span class="dv">2</span>]   <span class="co"># shape (T, num_bits)</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    outcome <span class="op">=</span> sqe[:, <span class="dv">1</span>::<span class="dv">2</span>]   <span class="co"># shape (T, num_bits)</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    expX <span class="op">=</span> jnp.where(basis <span class="op">==</span> <span class="dv">2</span>,</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>                     jnp.where(outcome <span class="op">==</span> <span class="dv">1</span>, <span class="op">+</span><span class="fl">3.0</span>, <span class="op">-</span><span class="fl">3.0</span>),</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>                     <span class="fl">0.0</span>)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    expZ <span class="op">=</span> jnp.where(basis <span class="op">==</span> <span class="dv">4</span>,</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>                     jnp.where(outcome <span class="op">==</span> <span class="dv">1</span>, <span class="op">+</span><span class="fl">3.0</span>, <span class="op">-</span><span class="fl">3.0</span>), <span class="co">#3 for unbiased estim (see classical shadows th.)</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>                     <span class="fl">0.0</span>)</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    all_ZX_XZ <span class="op">=</span> []</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">2</span>,N):</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>      expZX_XZ <span class="op">=</span> expZ[:, :<span class="op">-</span>i]</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>,i):</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>        expZX_XZ <span class="op">=</span> expZX_XZ <span class="op">*</span> expX[:, j:<span class="op">-</span>i<span class="op">+</span>j]</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>      expZX_XZ <span class="op">=</span> expZX_XZ <span class="op">*</span> expZ[:, i:]</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>      <span class="co">#sums per samples</span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>      ZX_XZ <span class="op">=</span> expZX_XZ.<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">1</span>).mean()</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>      all_ZX_XZ.append(ZX_XZ)</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>    all_ZX_XZ <span class="op">=</span> jnp.array(all_ZX_XZ)    <span class="co"># shape</span></span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> all_ZX_XZ</span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> MoM_stab(sqe: jnp.ndarray,</span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>               num_parts: <span class="bu">int</span>) <span class="op">-&gt;</span> jnp.ndarray:</span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a><span class="co">    Median‐of‐means estimate of ⟨H⟩ from shadows `sqe` of shape (T, 2*num_bits),</span></span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a><span class="co">    partitioned into `num_parts` blocks of equal size.</span></span>
+<span id="cb17-39"><a href="#cb17-39" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb17-40"><a href="#cb17-40" aria-hidden="true" tabindex="-1"></a>    T <span class="op">=</span> sqe.shape[<span class="dv">0</span>]</span>
+<span id="cb17-41"><a href="#cb17-41" aria-hidden="true" tabindex="-1"></a>    part_size <span class="op">=</span> T <span class="op">//</span> num_parts</span>
+<span id="cb17-42"><a href="#cb17-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> part_size <span class="op">*</span> num_parts <span class="op">!=</span> T:</span>
+<span id="cb17-43"><a href="#cb17-43" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="ss">f"T=</span><span class="sc">{</span>T<span class="sc">}</span><span class="ss"> not divisible by num_parts=</span><span class="sc">{</span>num_parts<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb17-44"><a href="#cb17-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-45"><a href="#cb17-45" aria-hidden="true" tabindex="-1"></a>    <span class="co"># compute block‐means</span></span>
+<span id="cb17-46"><a href="#cb17-46" aria-hidden="true" tabindex="-1"></a>    means <span class="op">=</span> []</span>
+<span id="cb17-47"><a href="#cb17-47" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(num_parts):</span>
+<span id="cb17-48"><a href="#cb17-48" aria-hidden="true" tabindex="-1"></a>        block <span class="op">=</span> sqe[k<span class="op">*</span>part_size:(k<span class="op">+</span><span class="dv">1</span>)<span class="op">*</span>part_size]</span>
+<span id="cb17-49"><a href="#cb17-49" aria-hidden="true" tabindex="-1"></a>        means.append(sqe_cal_stab(block))</span>
+<span id="cb17-50"><a href="#cb17-50" aria-hidden="true" tabindex="-1"></a>    means <span class="op">=</span> jnp.stack(means)  <span class="co"># (num_parts,k)</span></span>
+<span id="cb17-51"><a href="#cb17-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-52"><a href="#cb17-52" aria-hidden="true" tabindex="-1"></a>    <span class="co"># return the median of the block‐means</span></span>
+<span id="cb17-53"><a href="#cb17-53" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> jnp.median(means, axis<span class="op">=</span><span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="7e27a3b4" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>stab_dataset <span class="op">=</span> jnp.zeros((<span class="bu">len</span>(all_h1),<span class="bu">len</span>(all_h2),N<span class="op">-</span><span class="dv">2</span>))</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, h1 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h1):</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j, h2 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h2):</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>      stab <span class="op">=</span> MoM_stab(sqe<span class="op">=</span>dataset.data[i,j], num_parts<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>      stab_dataset <span class="op">=</span> stab_dataset.at[i,j].<span class="bu">set</span>(stab)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>stab_recon <span class="op">=</span> jnp.zeros((<span class="bu">len</span>(all_h1),<span class="bu">len</span>(all_h2),N<span class="op">-</span><span class="dv">2</span>))</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, h1 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h1):</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j, h2 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h2):</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>      stab <span class="op">=</span> MoM_stab(sqe<span class="op">=</span>S_reconstructed[i,j], num_parts<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>      stab_recon <span class="op">=</span> stab_recon.at[i,j].<span class="bu">set</span>(stab)</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>,<span class="dv">5</span>),dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.rot90(stab_dataset[...,<span class="dv">0</span>]),cmap<span class="op">=</span>cmap_brown, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span>N)</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>plt.colorbar()</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="vs">r'Dataset ZXZ stab'</span>)</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h_1</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h_2</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>plt.xticks([<span class="dv">0</span>,<span class="dv">10</span>,<span class="dv">20</span>], [<span class="dv">0</span>,<span class="fl">0.5</span>,<span class="dv">1</span>])</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>plt.yticks([<span class="dv">5</span>,<span class="dv">15</span>,<span class="dv">25</span>], [<span class="op">-</span><span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>])</span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>,<span class="dv">5</span>),dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.rot90(stab_recon[...,<span class="dv">0</span>]),cmap<span class="op">=</span>cmap_brown, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span>N)</span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>plt.colorbar()</span>
+<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="vs">r'Reconstr</span><span class="dv">.</span><span class="vs"> ZXZ stab'</span>)</span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h_1</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h_2</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a>plt.xticks([<span class="dv">0</span>,<span class="dv">10</span>,<span class="dv">20</span>], [<span class="dv">0</span>,<span class="fl">0.5</span>,<span class="dv">1</span>])</span>
+<span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a>plt.yticks([<span class="dv">5</span>,<span class="dv">15</span>,<span class="dv">25</span>], [<span class="op">-</span><span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>])</span>
+<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb18-39"><a href="#cb18-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-40"><a href="#cb18-40" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb18-41"><a href="#cb18-41" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>,<span class="dv">5</span>),dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb18-42"><a href="#cb18-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-43"><a href="#cb18-43" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.rot90(stab_dataset[...,<span class="dv">1</span>]),cmap<span class="op">=</span>cmap_brown)</span>
+<span id="cb18-44"><a href="#cb18-44" aria-hidden="true" tabindex="-1"></a>plt.colorbar()</span>
+<span id="cb18-45"><a href="#cb18-45" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="vs">r'Dataset ZXXZ stab'</span>)</span>
+<span id="cb18-46"><a href="#cb18-46" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h_1</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb18-47"><a href="#cb18-47" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h_2</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb18-48"><a href="#cb18-48" aria-hidden="true" tabindex="-1"></a>plt.xticks([<span class="dv">0</span>,<span class="dv">10</span>,<span class="dv">20</span>], [<span class="dv">0</span>,<span class="fl">0.5</span>,<span class="dv">1</span>])</span>
+<span id="cb18-49"><a href="#cb18-49" aria-hidden="true" tabindex="-1"></a>plt.yticks([<span class="dv">5</span>,<span class="dv">15</span>,<span class="dv">25</span>], [<span class="op">-</span><span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>])</span>
+<span id="cb18-50"><a href="#cb18-50" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb18-51"><a href="#cb18-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-52"><a href="#cb18-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-53"><a href="#cb18-53" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb18-54"><a href="#cb18-54" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">7</span>,<span class="dv">5</span>),dpi<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb18-55"><a href="#cb18-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-56"><a href="#cb18-56" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.rot90(stab_recon[...,<span class="dv">1</span>]),cmap<span class="op">=</span>cmap_brown)</span>
+<span id="cb18-57"><a href="#cb18-57" aria-hidden="true" tabindex="-1"></a>plt.colorbar()</span>
+<span id="cb18-58"><a href="#cb18-58" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="vs">r'Reconstr</span><span class="dv">.</span><span class="vs"> ZXXZ stab'</span>)</span>
+<span id="cb18-59"><a href="#cb18-59" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h_1</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb18-60"><a href="#cb18-60" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h_2</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb18-61"><a href="#cb18-61" aria-hidden="true" tabindex="-1"></a>plt.xticks([<span class="dv">0</span>,<span class="dv">10</span>,<span class="dv">20</span>], [<span class="dv">0</span>,<span class="fl">0.5</span>,<span class="dv">1</span>])</span>
+<span id="cb18-62"><a href="#cb18-62" aria-hidden="true" tabindex="-1"></a>plt.yticks([<span class="dv">5</span>,<span class="dv">15</span>,<span class="dv">25</span>], [<span class="op">-</span><span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>])</span>
+<span id="cb18-63"><a href="#cb18-63" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-18-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-18-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-18-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-18-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="37960671" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>data[<span class="st">'stabilizers'</span>] <span class="op">=</span> {}</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>data[<span class="st">'stabilizers'</span>][<span class="st">'dataset'</span>] <span class="op">=</span> stab_dataset</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>data[<span class="st">'stabilizers'</span>][<span class="st">'recon'</span>] <span class="op">=</span> stab_recon</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="2238ae0b" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'clusterIsingN15_data_cpVAE2_QDisc.pkl'</span>, <span class="st">'wb'</span>) <span class="im">as</span> f:</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    pickle.dump(data, f)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="symbolic-regression" class="level2">
+<h2 class="anchored" data-anchor-id="symbolic-regression">Symbolic regression</h2>
+<p>In this section, we employ <code>QDisc.SR.SymbolicRegression</code> to investigate the <strong>nature of the additional cluster</strong> observed in the latent representation. We will use the <code>'2_body_correlator'</code> ansatz with the <strong>SR1</strong> objective.</p>
+<div id="7986a274" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">## specifying the index of the cluster and the 'out' data ##</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>idx_add_cluster <span class="op">=</span> jnp.array([[ <span class="dv">0</span>, <span class="dv">21</span>],</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">0</span>, <span class="dv">22</span>],</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">0</span>, <span class="dv">23</span>],</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">0</span>, <span class="dv">24</span>],</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">1</span>, <span class="dv">21</span>],</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">1</span>, <span class="dv">22</span>],</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">1</span>, <span class="dv">23</span>],</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">2</span>, <span class="dv">22</span>]])</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>idx_add_cluster2 <span class="op">=</span> jnp.array([[ <span class="dv">0</span>, <span class="dv">17</span>],</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">0</span>, <span class="dv">18</span>],</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">0</span>, <span class="dv">19</span>],</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">0</span>, <span class="dv">20</span>],</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">0</span>, <span class="dv">21</span>],</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">0</span>, <span class="dv">22</span>],</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">0</span>, <span class="dv">23</span>],</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">0</span>, <span class="dv">24</span>],</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">0</span>, <span class="dv">25</span>],</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">0</span>, <span class="dv">26</span>],</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">1</span>, <span class="dv">17</span>],</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">1</span>, <span class="dv">18</span>],</span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">1</span>, <span class="dv">19</span>],</span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">1</span>, <span class="dv">20</span>],</span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">1</span>, <span class="dv">21</span>],</span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">1</span>, <span class="dv">22</span>],</span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">1</span>, <span class="dv">23</span>],</span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">1</span>, <span class="dv">24</span>],</span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">1</span>, <span class="dv">25</span>],</span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">2</span>, <span class="dv">17</span>],</span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">2</span>, <span class="dv">18</span>],</span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">2</span>, <span class="dv">19</span>],</span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">2</span>, <span class="dv">20</span>],</span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">2</span>, <span class="dv">21</span>],</span>
+<span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">2</span>, <span class="dv">22</span>],</span>
+<span id="cb21-37"><a href="#cb21-37" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">2</span>, <span class="dv">23</span>],</span>
+<span id="cb21-38"><a href="#cb21-38" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">2</span>, <span class="dv">24</span>],</span>
+<span id="cb21-39"><a href="#cb21-39" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">3</span>, <span class="dv">17</span>],</span>
+<span id="cb21-40"><a href="#cb21-40" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">3</span>, <span class="dv">18</span>],</span>
+<span id="cb21-41"><a href="#cb21-41" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">3</span>, <span class="dv">19</span>],</span>
+<span id="cb21-42"><a href="#cb21-42" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">3</span>, <span class="dv">20</span>],</span>
+<span id="cb21-43"><a href="#cb21-43" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">3</span>, <span class="dv">21</span>],</span>
+<span id="cb21-44"><a href="#cb21-44" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">3</span>, <span class="dv">22</span>],</span>
+<span id="cb21-45"><a href="#cb21-45" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">3</span>, <span class="dv">23</span>],</span>
+<span id="cb21-46"><a href="#cb21-46" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">4</span>, <span class="dv">17</span>],</span>
+<span id="cb21-47"><a href="#cb21-47" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">4</span>, <span class="dv">18</span>],</span>
+<span id="cb21-48"><a href="#cb21-48" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">4</span>, <span class="dv">19</span>],</span>
+<span id="cb21-49"><a href="#cb21-49" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">4</span>, <span class="dv">20</span>],</span>
+<span id="cb21-50"><a href="#cb21-50" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">4</span>, <span class="dv">21</span>],</span>
+<span id="cb21-51"><a href="#cb21-51" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">4</span>, <span class="dv">22</span>],</span>
+<span id="cb21-52"><a href="#cb21-52" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">4</span>, <span class="dv">23</span>],</span>
+<span id="cb21-53"><a href="#cb21-53" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">5</span>, <span class="dv">17</span>],</span>
+<span id="cb21-54"><a href="#cb21-54" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">5</span>, <span class="dv">18</span>],</span>
+<span id="cb21-55"><a href="#cb21-55" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">5</span>, <span class="dv">19</span>],</span>
+<span id="cb21-56"><a href="#cb21-56" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">5</span>, <span class="dv">20</span>],</span>
+<span id="cb21-57"><a href="#cb21-57" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">5</span>, <span class="dv">21</span>],</span>
+<span id="cb21-58"><a href="#cb21-58" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">5</span>, <span class="dv">22</span>],</span>
+<span id="cb21-59"><a href="#cb21-59" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">6</span>, <span class="dv">17</span>],</span>
+<span id="cb21-60"><a href="#cb21-60" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">6</span>, <span class="dv">18</span>],</span>
+<span id="cb21-61"><a href="#cb21-61" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">6</span>, <span class="dv">19</span>],</span>
+<span id="cb21-62"><a href="#cb21-62" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">6</span>, <span class="dv">20</span>],</span>
+<span id="cb21-63"><a href="#cb21-63" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">6</span>, <span class="dv">21</span>],</span>
+<span id="cb21-64"><a href="#cb21-64" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">7</span>, <span class="dv">17</span>],</span>
+<span id="cb21-65"><a href="#cb21-65" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">7</span>, <span class="dv">18</span>],</span>
+<span id="cb21-66"><a href="#cb21-66" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">7</span>, <span class="dv">19</span>],</span>
+<span id="cb21-67"><a href="#cb21-67" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">7</span>, <span class="dv">20</span>],</span>
+<span id="cb21-68"><a href="#cb21-68" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">7</span>, <span class="dv">21</span>],</span>
+<span id="cb21-69"><a href="#cb21-69" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">8</span>, <span class="dv">17</span>],</span>
+<span id="cb21-70"><a href="#cb21-70" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">8</span>, <span class="dv">18</span>],</span>
+<span id="cb21-71"><a href="#cb21-71" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">8</span>, <span class="dv">19</span>],</span>
+<span id="cb21-72"><a href="#cb21-72" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">8</span>, <span class="dv">20</span>],</span>
+<span id="cb21-73"><a href="#cb21-73" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">9</span>, <span class="dv">17</span>],</span>
+<span id="cb21-74"><a href="#cb21-74" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">9</span>, <span class="dv">18</span>],</span>
+<span id="cb21-75"><a href="#cb21-75" aria-hidden="true" tabindex="-1"></a>       [ <span class="dv">9</span>, <span class="dv">19</span>],</span>
+<span id="cb21-76"><a href="#cb21-76" aria-hidden="true" tabindex="-1"></a>       [<span class="dv">10</span>, <span class="dv">18</span>]])</span>
+<span id="cb21-77"><a href="#cb21-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-78"><a href="#cb21-78" aria-hidden="true" tabindex="-1"></a>array_add_cluster <span class="op">=</span> jnp.zeros((<span class="bu">len</span>(all_h1),<span class="bu">len</span>(all_h2)))</span>
+<span id="cb21-79"><a href="#cb21-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-80"><a href="#cb21-80" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i,j <span class="kw">in</span> idx_add_cluster:</span>
+<span id="cb21-81"><a href="#cb21-81" aria-hidden="true" tabindex="-1"></a>  array_add_cluster <span class="op">=</span> array_add_cluster.at[i,j].<span class="bu">set</span>(<span class="dv">1</span>)</span>
+<span id="cb21-82"><a href="#cb21-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-83"><a href="#cb21-83" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i,j <span class="kw">in</span> idx_add_cluster2:</span>
+<span id="cb21-84"><a href="#cb21-84" aria-hidden="true" tabindex="-1"></a>  array_add_cluster <span class="op">=</span> array_add_cluster.at[i,j].add(<span class="dv">1</span>)</span>
+<span id="cb21-85"><a href="#cb21-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-86"><a href="#cb21-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-87"><a href="#cb21-87" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'font.size'</span>] <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb21-88"><a href="#cb21-88" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">5</span>,<span class="dv">4</span>),dpi<span class="op">=</span><span class="dv">200</span>)</span>
+<span id="cb21-89"><a href="#cb21-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-90"><a href="#cb21-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-91"><a href="#cb21-91" aria-hidden="true" tabindex="-1"></a>plt.imshow(jnp.rot90(array_add_cluster ),cmap<span class="op">=</span>cmap_blue)</span>
+<span id="cb21-92"><a href="#cb21-92" aria-hidden="true" tabindex="-1"></a>plt.colorbar()</span>
+<span id="cb21-93"><a href="#cb21-93" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="vs">r'add cluster id'</span>)</span>
+<span id="cb21-94"><a href="#cb21-94" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h_1</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb21-95"><a href="#cb21-95" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="vs">r'</span><span class="dv">$</span><span class="vs">h_2</span><span class="dv">$</span><span class="vs">'</span>)</span>
+<span id="cb21-96"><a href="#cb21-96" aria-hidden="true" tabindex="-1"></a>plt.xticks([<span class="dv">0</span>,<span class="dv">10</span>,<span class="dv">20</span>], [<span class="dv">0</span>,<span class="fl">0.5</span>,<span class="dv">1</span>])</span>
+<span id="cb21-97"><a href="#cb21-97" aria-hidden="true" tabindex="-1"></a>plt.yticks([<span class="dv">5</span>,<span class="dv">15</span>,<span class="dv">25</span>], [<span class="op">-</span><span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>])</span>
+<span id="cb21-98"><a href="#cb21-98" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-21-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="4f583463" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">## try using only Z measurements ##</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> <span class="dv">15</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>all_h1 <span class="op">=</span> jnp.arange(<span class="fl">0.05</span>, <span class="fl">1.25</span>, <span class="fl">0.05</span>)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>all_h2 <span class="op">=</span> jnp.arange(<span class="op">-</span><span class="fl">1.5</span>, <span class="fl">1.5</span>, <span class="fl">0.1</span>)</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>num_sample_per_params <span class="op">=</span> <span class="dv">2000</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> jnp.zeros([jnp.size(all_h1), jnp.size(all_h2), num_sample_per_params, <span class="dv">2</span><span class="op">*</span>N])</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> jax.random.PRNGKey(<span class="dv">12345</span>)</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>wave_fcts <span class="op">=</span> data_exact[<span class="st">'wave_fcts'</span>]</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, h1 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h1):</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j, h2 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h2):</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>      key, subkey <span class="op">=</span> jax.random.split(key)</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>      s <span class="op">=</span> get_classical_shadow(psi<span class="op">=</span>wave_fcts.astype(<span class="st">'float32'</span>)[i,j], num_shots<span class="op">=</span>num_sample_per_params, N<span class="op">=</span><span class="dv">15</span>, rng_key<span class="op">=</span>subkey, bases<span class="op">=</span><span class="st">'Z'</span>)</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>      data <span class="op">=</span> data.at[i,j].<span class="bu">set</span>(s)</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> data.astype(<span class="st">'int32'</span>)[...,<span class="dv">1</span>::<span class="dv">2</span>]</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>dataset_onlyZ <span class="op">=</span> Dataset(data<span class="op">=</span>data, thetas<span class="op">=</span>[all_h1, all_h2], data_type<span class="op">=</span><span class="st">'shadow'</span>, local_dimension<span class="op">=</span><span class="dv">2</span>, local_states<span class="op">=</span>jnp.array([<span class="dv">0</span>,<span class="dv">1</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="28489505" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">## 2BC with SR1 on just Z measurements ##</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> qdisc.sr.core <span class="im">import</span> SymbolicRegression</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>cluster_idx_out <span class="op">=</span> jnp.argwhere(array_add_cluster <span class="op">==</span> <span class="dv">0</span>)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>mySR <span class="op">=</span> SymbolicRegression(dataset_onlyZ,</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>                          cluster_idx_in<span class="op">=</span>idx_add_cluster,</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>                          cluster_idx_out<span class="op">=</span>cluster_idx_out,</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>                          objective<span class="op">=</span><span class="st">'SR1'</span>,</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>                          shift_data<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> jax.random.PRNGKey(<span class="dv">7654</span>)</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>modelSR1 <span class="op">=</span> mySR.train_2BC(key, dataset_size<span class="op">=</span><span class="dv">10000</span>)</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="co">## plot the alpha ##</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>topology <span class="op">=</span> [[i <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(N)]]</span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>mySR.plot_alpha(topology<span class="op">=</span>topology, edge_scale<span class="op">=</span><span class="dv">5</span>, name<span class="op">=</span><span class="st">'SR1'</span>)</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a><span class="co">## plot the prediction ##</span></span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> mySR.compute_and_plot_prediction(name<span class="op">=</span><span class="st">'SR1'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="b89d67d3" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">## try using only X measurements ##</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> <span class="dv">15</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>all_h1 <span class="op">=</span> jnp.arange(<span class="fl">0.05</span>, <span class="fl">1.25</span>, <span class="fl">0.05</span>)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>all_h2 <span class="op">=</span> jnp.arange(<span class="op">-</span><span class="fl">1.5</span>, <span class="fl">1.5</span>, <span class="fl">0.1</span>)</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>num_sample_per_params <span class="op">=</span> <span class="dv">2000</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> jnp.zeros([jnp.size(all_h1), jnp.size(all_h2), num_sample_per_params, <span class="dv">2</span><span class="op">*</span>N])</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> jax.random.PRNGKey(<span class="dv">12345</span>)</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>wave_fcts <span class="op">=</span> data_exact[<span class="st">'wave_fcts'</span>]</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, h1 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h1):</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j, h2 <span class="kw">in</span> <span class="bu">enumerate</span>(all_h2):</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>      key, subkey <span class="op">=</span> jax.random.split(key)</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>      s <span class="op">=</span> get_classical_shadow(psi<span class="op">=</span>wave_fcts.astype(<span class="st">'float32'</span>)[i,j], num_shots<span class="op">=</span>num_sample_per_params, N<span class="op">=</span><span class="dv">15</span>, rng_key<span class="op">=</span>subkey, bases<span class="op">=</span><span class="st">'X'</span>)</span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>      data <span class="op">=</span> data.at[i,j].<span class="bu">set</span>(s)</span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> data.astype(<span class="st">'int32'</span>)[...,<span class="dv">1</span>::<span class="dv">2</span>]</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>dataset_onlyX <span class="op">=</span> Dataset(data<span class="op">=</span>data, thetas<span class="op">=</span>[all_h1, all_h2], data_type<span class="op">=</span><span class="st">'shadow'</span>, local_dimension<span class="op">=</span><span class="dv">2</span>, local_states<span class="op">=</span>jnp.array([<span class="dv">0</span>,<span class="dv">1</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="d17cea90" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">## 2BC ansatz with SR1 on just X measurements ##</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>cluster_idx_out <span class="op">=</span> jnp.argwhere(array_add_cluster <span class="op">==</span> <span class="dv">0</span>)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>mySR <span class="op">=</span> SymbolicRegression(dataset_onlyX,</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>                          cluster_idx_in<span class="op">=</span>idx_add_cluster,</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>                          cluster_idx_out<span class="op">=</span>cluster_idx_out,</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>                          objective<span class="op">=</span><span class="st">'SR1'</span>,</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>                          shift_data<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>key <span class="op">=</span> jax.random.PRNGKey(<span class="dv">7654</span>)</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>modelSR1 <span class="op">=</span> mySR.train_2BC(key, dataset_size<span class="op">=</span><span class="dv">10000</span>)</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a><span class="co">## plot the alpha ##</span></span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>topology <span class="op">=</span> [[i <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(N)]]</span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>mySR.plot_alpha(topology<span class="op">=</span>topology, edge_scale<span class="op">=</span><span class="dv">5</span>, name<span class="op">=</span><span class="st">'SR1'</span>)</span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a><span class="co">## plot the prediction ##</span></span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> mySR.compute_and_plot_prediction(name<span class="op">=</span><span class="st">'SR1'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>### Start preparing the dataset ###
+### Dataset prepared, start the trainnig ###
+### Training finished ###
+  message: CONVERGENCE: NORM OF PROJECTED GRADIENT &lt;= PGTOL
+  success: True
+   status: 0
+      fun: 0.5106711659251788
+        x: [ 1.540e+00  3.770e-02 ...  2.136e-01  1.452e+00]
+      nit: 55
+      jac: [ 2.176e-06  2.887e-06 ...  1.443e-06  6.439e-07]
+     nfev: 6678
+     njev: 63
+ hess_inv: &lt;105x105 LbfgsInvHessProduct with dtype=float64&gt;</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-25-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="qdisc_ClusterIsing_files/figure-html/cell-25-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="fbc503e4" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>alpha_ij <span class="op">=</span> mySR.model.alpha</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>alpha_ij</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>array([ 1.53990705,  0.03770259, -0.04346825, -0.13149565, -0.20346243,
+       -0.216187  , -0.12516161, -0.23463057, -0.14797347, -0.16969701,
+       -0.01672046, -0.26892908, -0.251428  , -0.18952416,  0.90347631,
+       -0.07494612, -0.16222789, -0.29326692, -0.17400529, -0.26595568,
+       -0.12645806, -0.2897381 , -0.16483247, -0.27759441, -0.1555185 ,
+       -0.16111236, -0.16457265,  1.06849548, -0.24298301, -0.14912591,
+       -0.24760999, -0.27366484, -0.23243181, -0.16129378, -0.11605931,
+       -0.27185235, -0.19379922, -0.1133317 , -0.25916324,  1.05848648,
+       -0.16312015, -0.21815877, -0.14621403, -0.29572144, -0.15435303,
+       -0.29049595, -0.33689923, -0.14333938, -0.17874212, -0.12713576,
+        1.15864417, -0.17555103, -0.11184462, -0.2233854 , -0.11609519,
+       -0.40802327, -0.16249469, -0.26187147, -0.1974241 , -0.19273916,
+        1.04689131, -0.18818199, -0.08297489, -0.2684967 , -0.21047272,
+       -0.27824555, -0.07299964, -0.13854064, -0.16618549,  1.0737933 ,
+       -0.23992408, -0.15637794, -0.15867473, -0.0993864 , -0.26412637,
+       -0.07127817, -0.18548937,  1.0084792 , -0.17280045,  0.05488786,
+       -0.02439849, -0.34237022, -0.14169306, -0.24500431,  1.07123984,
+       -0.13488342, -0.21586478, -0.18640315, -0.24594356, -0.04409138,
+        1.06001665, -0.26047844, -0.0571735 , -0.24347058, -0.12175681,
+        1.12084896, -0.3204326 , -0.16197169, -0.25358765,  1.18735147,
+       -0.19385288, -0.14679398,  0.76954958,  0.21358879,  1.45176713])</code></pre>
+</div>
+</div>
+<p>we can further reduce the form of <span class="math inline">\(f(x)\)</span> by mapping the 2 body weights <span class="math inline">\(\alpha_{ij}\)</span> to a compact analytical formula. This can be done using the <code>reduce_alpha()</code> method.</p>
+<div id="113a15c2" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> mySR.reduce_alpha(random_state <span class="op">=</span> <span class="dv">5732</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>PySRRegressor imported</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/usr/local/lib/python3.12/dist-packages/pysr/sr.py:2811: UserWarning: Note: it looks like you are running in Jupyter. The progress bar will be turned off.
+  warnings.warn(
+[ Info: Started!</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Expressions evaluated per second: 6.080e+04
+Progress: 319 / 6200 total iterations (5.145%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           2.035e-01  0.000e+00  y = -0.0070507
+3           1.909e-01  3.189e-02  y = 0.63834 / x₁
+5           1.358e-01  1.702e-01  y = 0.57163 / (x₁ - x₀)
+7           2.778e-02  7.935e-01  y = -0.20651 / ((x₁ - x₀) + -1.1858)
+9           1.197e-02  4.208e-01  y = (-0.14197 / (0.89362 - (x₁ - x₀))) + -0.22225
+19          1.191e-02  4.953e-04  y = ((x₁ / (x₁ * ((((x₁ - 1.1846) - (x₀ - x₁)) - 0.61262) ...
+                                      - x₀))) * 0.26971) - 0.22255
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 6.010e+04
+Progress: 694 / 6200 total iterations (11.194%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           2.035e-01  0.000e+00  y = -0.0070507
+3           1.909e-01  3.189e-02  y = 0.63834 / x₁
+5           1.357e-01  1.705e-01  y = -0.59076 / (x₀ - x₁)
+7           2.778e-02  7.932e-01  y = -0.20651 / ((x₁ - x₀) + -1.1858)
+9           1.170e-02  4.324e-01  y = (-0.087259 / (0.93359 - (x₁ - x₀))) + -0.20745
+15          1.143e-02  3.890e-03  y = ((-0.035063 / (0.97307 - (x₁ - x₀))) + -0.21702) - (-0...
+                                      .026586 / (x₀ - -0.34569))
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 7.340e+04
+Progress: 1210 / 6200 total iterations (19.516%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           2.035e-01  0.000e+00  y = -0.0070507
+3           1.909e-01  3.189e-02  y = 0.63834 / x₁
+5           1.357e-01  1.705e-01  y = -0.59076 / (x₀ - x₁)
+7           2.778e-02  7.932e-01  y = -0.20686 / ((x₁ + -1.1859) - x₀)
+9           1.168e-02  4.332e-01  y = (-0.070531 / (0.94634 - (x₁ - x₀))) + -0.20238
+11          1.168e-02  6.703e-05  y = ((0.44765 / (0.94717 - (x₁ - x₀))) * -0.15478) + -0.20...
+                                      168
+13          1.071e-02  4.346e-02  y = (-0.11097 / ((0.91048 - (x₁ - x₀)) + (0.022285 / x₁)))...
+                                       - 0.21383
+15          1.029e-02  1.995e-02  y = ((-0.12132 / (0.90642 - (x₁ - x₀))) + (0.38011 / (x₁ *...
+                                       x₁))) + -0.22749
+17          9.572e-03  3.606e-02  y = (-0.11953 / (0.90714 - (x₁ - x₀))) + ((0.078487 / ((0....
+                                      19978 - x₀) * x₁)) + -0.22525)
+19          9.415e-03  8.301e-03  y = ((-0.12599 / (0.90378 - (x₁ - x₀))) + ((-0.22172 / (x₁...
+                                       * (x₀ - 0.57073))) / x₁)) - 0.21898
+21          9.313e-03  5.413e-03  y = ((-0.10962 / (0.91595 - (x₁ - x₀))) + ((-0.18398 / ((x...
+                                      ₁ * x₀) - 0.57641)) / (x₁ + -0.2413))) - 0.22248
+23          9.221e-03  4.986e-03  y = ((-0.18437 / ((x₀ * (x₁ * 0.6088)) - 0.57172)) / (x₁ +...
+                                       -0.24692)) + ((-0.11029 / (0.916 - (x₁ - x₀))) - 0.22135)
+25          9.214e-03  3.672e-04  y = ((-0.11045 / (0.91633 - (x₁ - x₀))) + ((-0.24069 / (((...
+                                      x₁ * x₀) / -0.70687) - -0.707)) / (x₀ - (x₁ + -0.2411)))) ...
+                                      - 0.22194
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 8.140e+04
+Progress: 1757 / 6200 total iterations (28.339%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           2.035e-01  0.000e+00  y = -0.0070507
+3           1.909e-01  3.189e-02  y = 0.63834 / x₁
+5           1.357e-01  1.705e-01  y = -0.59076 / (x₀ - x₁)
+7           2.778e-02  7.932e-01  y = -0.20687 / (x₁ + (-1.1859 - x₀))
+9           1.168e-02  4.332e-01  y = (-0.070531 / (0.94634 - (x₁ - x₀))) + -0.20238
+11          1.168e-02  6.703e-05  y = ((0.44765 / (0.94717 - (x₁ - x₀))) * -0.15478) + -0.20...
+                                      168
+13          1.071e-02  4.347e-02  y = (-0.11094 / (((0.022242 / x₁) + 0.91038) - (x₁ - x₀)))...
+                                       - 0.21384
+15          1.027e-02  2.093e-02  y = (-0.11646 / ((0.90857 - (x₁ - x₀)) + (0.02394 / (x₁ * ...
+                                      x₁)))) - 0.21942
+17          9.563e-03  3.555e-02  y = (-0.13043 / (0.90043 - (x₁ - x₀))) + ((-0.080147 / (x₁...
+                                       * (x₀ + -0.20308))) - 0.22673)
+19          9.362e-03  1.060e-02  y = ((-0.2884 / ((x₀ - 0.56878) * x₁)) / x₁) + ((-0.12642 ...
+                                      / (0.90323 - (x₁ - x₀))) - 0.21861)
+21          9.301e-03  3.307e-03  y = ((-0.10962 / (0.91595 - (x₁ - x₀))) + ((-0.18398 / ((x...
+                                      ₁ * x₀) - 0.57641)) / (x₁ + -0.29705))) - 0.22248
+23          9.220e-03  4.358e-03  y = (-0.10962 / (0.91595 - (x₁ - x₀))) + (((-0.18398 / ((x...
+                                      ₁ * x₀) - 0.57641)) / ((x₁ - x₀) + -0.2413)) - 0.22248)
+25          9.183e-03  1.991e-03  y = (((-0.24069 / (((x₁ * x₀) / -0.80273) - -0.76212)) / (...
+                                      x₀ - (x₁ + -0.2411))) + (-0.11045 / (0.91633 - (x₁ - x₀)))...
+                                      ) - 0.22194
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 8.590e+04
+Progress: 2272 / 6200 total iterations (36.645%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           2.035e-01  0.000e+00  y = -0.0070507
+3           1.909e-01  3.189e-02  y = 0.63864 / x₁
+5           1.357e-01  1.705e-01  y = -0.59076 / (x₀ - x₁)
+7           2.778e-02  7.932e-01  y = -0.20687 / (x₁ + (-1.1859 - x₀))
+9           1.168e-02  4.333e-01  y = (-0.070507 / (0.94622 - (x₁ - x₀))) + -0.20238
+13          1.071e-02  2.173e-02  y = (-0.11094 / (((0.022242 / x₁) + 0.91038) - (x₁ - x₀)))...
+                                       - 0.21384
+15          1.027e-02  2.093e-02  y = (-0.11646 / ((0.90857 - (x₁ - x₀)) + (0.02394 / (x₁ * ...
+                                      x₁)))) - 0.21942
+17          9.501e-03  3.882e-02  y = (-0.16832 / (x₁ * (x₀ - 0.4115))) + ((-0.10962 / (0.91...
+                                      595 - (x₁ - x₀))) - 0.22248)
+19          9.358e-03  7.580e-03  y = (((-0.18398 / (x₁ * (x₀ - 0.4115))) / x₁) - 0.22248) +...
+                                       (-0.10962 / (0.91595 - (x₁ - x₀)))
+21          9.279e-03  4.203e-03  y = (-0.10962 / (0.91595 - (x₁ - x₀))) + (((-0.18398 / ((x...
+                                      ₁ - x₀) * (x₀ - 0.4115))) / x₁) - 0.22248)
+23          9.186e-03  5.073e-03  y = (-0.11036 / (0.9167 - (x₁ - x₀))) + (((-0.18398 / ((x₁...
+                                       * x₀) - 0.57641)) / (x₁ + (-0.27416 - x₀))) - 0.22238)
+25          9.167e-03  9.969e-04  y = (-0.11036 / (0.9167 - (x₁ - x₀))) + (((-0.18398 / ((x₁...
+                                       * x₀) - 0.63347)) / (x₁ + ((-0.18289 - 0.151) - x₀))) - 0...
+                                      .22238)
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 9.520e+04
+Progress: 2806 / 6200 total iterations (45.258%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           2.035e-01  0.000e+00  y = -0.0070507
+3           1.909e-01  3.189e-02  y = 0.63864 / x₁
+5           1.357e-01  1.705e-01  y = -0.59076 / (x₀ - x₁)
+7           2.778e-02  7.932e-01  y = -0.20687 / (x₁ + (-1.1859 - x₀))
+9           1.168e-02  4.333e-01  y = (-0.070507 / (0.94622 - (x₁ - x₀))) + -0.20238
+13          1.063e-02  2.361e-02  y = (-0.083855 / ((0.015808 / x₁) + (0.93208 - (x₁ - x₀)))...
+                                      ) + -0.20815
+15          1.024e-02  1.861e-02  y = ((-0.10962 / (0.91595 - (x₁ - x₀))) + ((0.39086 / x₁) ...
+                                      / x₁)) - 0.22248
+17          9.429e-03  4.116e-02  y = ((-0.11036 / (0.9167 - (x₁ - x₀))) + ((-0.13326 / x₁) ...
+                                      / (x₀ + -0.32639))) - 0.22238
+19          9.328e-03  5.427e-03  y = (-0.19149 / ((x₀ - 0.41169) * (x₁ * x₁))) + ((-0.11311...
+                                       / (0.9128 - (x₁ - x₀))) - 0.21693)
+21          9.255e-03  3.892e-03  y = ((-0.18405 / ((x₀ - 0.41169) * (x₁ * (x₁ - x₀)))) + (-...
+                                      0.11311 / (0.9128 - (x₁ - x₀)))) - 0.21693
+23          9.167e-03  4.784e-03  y = (-0.11036 / (0.9167 - (x₁ - x₀))) + (((-0.18398 / ((x₁...
+                                       * x₀) - 0.63347)) / (x₁ + (-0.32639 - x₀))) - 0.22238)
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 9.050e+04
+Progress: 3224 / 6200 total iterations (52.000%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           2.035e-01  0.000e+00  y = -0.0070507
+3           1.909e-01  3.189e-02  y = 0.63864 / x₁
+5           1.357e-01  1.705e-01  y = -0.59076 / (x₀ - x₁)
+7           2.778e-02  7.932e-01  y = -0.20656 / ((x₁ + -1.1857) - x₀)
+9           1.168e-02  4.333e-01  y = (-0.070507 / (0.94622 - (x₁ - x₀))) + -0.20238
+13          1.063e-02  2.361e-02  y = (-0.083855 / ((0.015808 / x₁) + (0.93208 - (x₁ - x₀)))...
+                                      ) + -0.20815
+15          1.024e-02  1.862e-02  y = (-0.10962 / (0.91595 - (x₁ - x₀))) + (((0.37674 / x₁) ...
+                                      / x₁) - 0.22248)
+17          9.410e-03  4.216e-02  y = (-0.11294 / (0.91371 - (x₁ - x₀))) + (((-0.11809 / x₁)...
+                                       / (x₀ + -0.32599)) - 0.21897)
+19          9.325e-03  4.581e-03  y = (-0.1942 / (((x₀ - 0.41169) * x₁) * x₁)) + ((-0.11311 ...
+                                      / (0.9128 - (x₁ - x₀))) - 0.21693)
+21          9.226e-03  5.292e-03  y = ((-0.1915 / ((x₀ - 0.41169) * (x₁ * (x₁ - x₀)))) + (-0...
+                                      .11356 / (0.91326 - (x₁ - x₀)))) - 0.21687
+23          9.167e-03  3.249e-03  y = (((-0.18397 / ((x₁ * x₀) - 0.63347)) / ((x₁ + -0.32639...
+                                      ) - x₀)) - 0.22237) + (-0.11032 / (0.91659 - (x₁ - x₀)))
+25          9.129e-03  2.082e-03  y = (-0.11058 / (0.91677 - (x₁ - x₀))) + (((-0.18397 / ((x...
+                                      ₁ * x₀) - 0.65149)) / ((x₁ - (x₀ / 0.93262)) + -0.31388)) ...
+                                      - 0.2223)
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 8.930e+04
+Progress: 3762 / 6200 total iterations (60.677%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           2.035e-01  0.000e+00  y = -0.0070507
+3           1.909e-01  3.189e-02  y = 0.63864 / x₁
+5           1.357e-01  1.705e-01  y = -0.59076 / (x₀ - x₁)
+7           2.778e-02  7.932e-01  y = -0.20667 / ((x₁ + -1.1858) - x₀)
+9           1.168e-02  4.333e-01  y = (-0.070507 / (0.94622 - (x₁ - x₀))) + -0.20238
+13          1.062e-02  2.373e-02  y = (-0.085704 / (((0.016837 / x₁) - (x₁ - x₀)) + 0.93069)...
+                                      ) + -0.20749
+15          1.003e-02  2.884e-02  y = (0.06626 / (x₁ + -0.8544)) + ((-0.11243 / (0.9124 - (x...
+                                      ₁ - x₀))) - 0.22761)
+17          9.407e-03  3.186e-02  y = ((-0.11294 / (0.91371 - (x₁ - x₀))) + ((-0.11809 / x₁)...
+                                       / (-0.31971 + x₀))) - 0.21897
+19          9.325e-03  4.413e-03  y = (-0.11311 / (0.9128 - (x₁ - x₀))) + ((-0.1942 / ((x₁ *...
+                                       x₁) * (x₀ - 0.41169))) - 0.21693)
+21          9.226e-03  5.292e-03  y = ((-0.1915 / ((x₀ - 0.41169) * (x₁ * (x₁ - x₀)))) + (-0...
+                                      .11356 / (0.91326 - (x₁ - x₀)))) - 0.21687
+23          9.167e-03  3.249e-03  y = (((-0.18397 / ((x₁ * x₀) - 0.63347)) / ((x₁ + -0.32639...
+                                      ) - x₀)) - 0.22237) + (-0.11032 / (0.91659 - (x₁ - x₀)))
+25          8.044e-03  6.535e-02  y = (-0.11313 / (0.91633 - (x₁ - x₀))) + (((-0.18553 / ((x...
+                                      ₀ * x₁) - 0.65126)) / ((x₁ + -0.1135) - (x₀ / 0.93144))) -...
+                                       0.22113)
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 9.210e+04
+Progress: 4258 / 6200 total iterations (68.677%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           2.035e-01  0.000e+00  y = -0.0070507
+3           1.909e-01  3.189e-02  y = 0.63864 / x₁
+5           1.357e-01  1.705e-01  y = -0.59076 / (x₀ - x₁)
+7           2.778e-02  7.932e-01  y = -0.20667 / ((x₁ + -1.1858) - x₀)
+9           1.168e-02  4.333e-01  y = (-0.070507 / (0.94622 - (x₁ - x₀))) + -0.20238
+13          1.062e-02  2.373e-02  y = (-0.085704 / ((0.016837 / x₁) - (x₁ - (0.93069 + x₀)))...
+                                      ) + -0.20749
+15          1.002e-02  2.907e-02  y = (0.06626 / (x₁ + -0.8544)) + ((-0.11243 / (0.9128 - (x...
+                                      ₁ - x₀))) - 0.22761)
+17          9.407e-03  3.163e-02  y = ((-0.11294 / (0.91371 - (x₁ - x₀))) + ((-0.11809 / x₁)...
+                                       / (-0.31971 + x₀))) - 0.21897
+19          9.199e-03  1.117e-02  y = ((-0.26978 / ((x₁ * x₁) * (x₀ - 0.56967))) + (-0.08713...
+                                      3 / (0.93283 - (x₁ - x₀)))) - 0.21323
+21          9.153e-03  2.506e-03  y = (-0.26978 / (x₁ * ((x₁ * (x₀ - 0.10441)) - 0.56967))) ...
+                                      + ((-0.087133 / (0.93283 - (x₁ - x₀))) - 0.21323)
+23          9.146e-03  4.010e-04  y = (-0.26978 / (x₁ * (((0.10441 - x₀) * (x₁ / -1.0391)) -...
+                                       0.56967))) + ((-0.087133 / (0.93283 - (x₁ - x₀))) - 0.213...
+                                      23)
+25          8.039e-03  6.454e-02  y = (-0.11313 / (0.91633 - (x₁ - x₀))) + (((-0.18553 / ((x...
+                                      ₀ * x₁) - 0.64223)) / (x₁ + (-0.1135 - (x₀ / 0.93144)))) -...
+                                       0.22113)
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 8.990e+04
+Progress: 4735 / 6200 total iterations (76.371%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           2.035e-01  0.000e+00  y = -0.0070507
+3           1.909e-01  3.189e-02  y = 0.63864 / x₁
+5           1.357e-01  1.705e-01  y = -0.59076 / (x₀ - x₁)
+7           2.778e-02  7.932e-01  y = -0.20667 / ((x₁ + -1.1858) - x₀)
+9           1.168e-02  4.333e-01  y = (-0.070507 / (0.94622 - (x₁ - x₀))) + -0.20238
+13          1.062e-02  2.373e-02  y = (-0.085704 / ((0.016837 / x₁) - (x₁ - (0.93069 + x₀)))...
+                                      ) + -0.20749
+15          1.002e-02  2.907e-02  y = (-0.11243 / (0.9128 - (x₁ - x₀))) + ((0.06626 / (x₁ + ...
+                                      -0.8544)) - 0.22761)
+17          9.407e-03  3.163e-02  y = ((-0.11294 / (0.91371 - (x₁ - x₀))) + ((-0.11809 / x₁)...
+                                       / (-0.31971 + x₀))) - 0.21897
+19          9.192e-03  1.158e-02  y = (-0.26974 / ((x₁ * x₁) * (x₀ - 0.56955))) + ((-0.09457...
+                                      1 / (0.92708 - (x₁ - x₀))) - 0.20873)
+21          9.138e-03  2.915e-03  y = (-0.087696 / (0.93245 - (x₁ - x₀))) + ((-0.26983 / (x₁...
+                                       * ((x₁ * (x₀ - 0.1044)) - 0.50378))) - 0.21311)
+23          9.091e-03  2.616e-03  y = ((-0.087768 / (0.93267 - (x₁ - x₀))) - 0.21311) + (-0....
+                                      26983 / (((((x₀ - 0.1044) * x₁) - 0.50378) * x₁) - x₀))
+25          7.990e-03  6.453e-02  y = (-0.11313 / (0.91633 - (x₁ - x₀))) + (((-0.18553 / ((x...
+                                      ₀ * x₁) - 0.61863)) / (((x₁ + -0.11303) * 0.93143) - x₀)) ...
+                                      - 0.22113)
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>[ Info: Final population:
+[ Info: Results saved to:</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Expressions evaluated per second: 9.130e+04
+Progress: 5253 / 6200 total iterations (84.726%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           2.035e-01  0.000e+00  y = -0.0070507
+3           1.909e-01  3.189e-02  y = 0.63864 / x₁
+5           1.357e-01  1.705e-01  y = -0.59076 / (x₀ - x₁)
+7           2.778e-02  7.932e-01  y = -0.20667 / ((x₁ + -1.1858) - x₀)
+9           1.168e-02  4.333e-01  y = (-0.070507 / (0.94622 - (x₁ - x₀))) + -0.20238
+13          1.062e-02  2.373e-02  y = (-0.085704 / ((0.016837 / x₁) - (x₁ - (0.93069 + x₀)))...
+                                      ) + -0.20749
+15          9.731e-03  4.376e-02  y = (-0.13525 / ((0.011703 / (0.53637 - x₀)) - (x₁ - (x₀ +...
+                                       0.89961)))) + -0.22209
+17          9.407e-03  1.694e-02  y = ((-0.11294 / (0.91371 - (x₁ - x₀))) + ((-0.11809 / x₁)...
+                                       / (-0.31971 + x₀))) - 0.21897
+19          9.192e-03  1.158e-02  y = (-0.26974 / ((x₁ * x₁) * (x₀ - 0.56955))) + ((-0.09457...
+                                      1 / (0.92708 - (x₁ - x₀))) - 0.20873)
+21          9.101e-03  4.970e-03  y = (-0.05641 / (0.95622 - (x₁ - x₀))) + ((-0.24991 / (x₁ ...
+                                      * ((x₁ * (x₀ - 0.12718)) - 0.4419))) - 0.20414)
+23          9.081e-03  1.120e-03  y = (-0.26294 / ((((x₀ - 0.1044) * x₁) - 0.48882) * (x₁ - ...
+                                      x₀))) + ((-0.088192 / (0.93288 - (x₁ - x₀))) - 0.21305)
+25          7.990e-03  6.398e-02  y = (-0.11313 / (0.91633 - (x₁ - x₀))) + (((-0.18553 / ((x...
+                                      ₁ * x₀) - 0.61863)) / (((x₁ + -0.11303) * 0.93143) - x₀)) ...
+                                      - 0.22113)
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+
+Expressions evaluated per second: 9.160e+04
+Progress: 5683 / 6200 total iterations (91.661%)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           2.035e-01  0.000e+00  y = -0.0070507
+3           1.909e-01  3.189e-02  y = 0.63864 / x₁
+5           1.357e-01  1.705e-01  y = -0.59076 / (x₀ - x₁)
+7           2.778e-02  7.932e-01  y = -0.20667 / ((x₁ + -1.1858) - x₀)
+9           1.168e-02  4.333e-01  y = (-0.070507 / (0.94622 - (x₁ - x₀))) + -0.20238
+13          1.062e-02  2.373e-02  y = (-0.085704 / ((0.016837 / x₁) - (x₁ - (0.93069 + x₀)))...
+                                      ) + -0.20749
+15          9.731e-03  4.376e-02  y = (-0.13525 / ((0.011703 / (0.53637 - x₀)) - (x₁ - (x₀ +...
+                                       0.89961)))) + -0.22209
+17          9.407e-03  1.694e-02  y = ((-0.11294 / (0.91371 - (x₁ - x₀))) + ((-0.11809 / x₁)...
+                                       / (-0.31971 + x₀))) - 0.21897
+19          9.186e-03  1.191e-02  y = ((-0.07979 / (0.93826 - (x₁ - x₀))) + (-0.24638 / ((x₀...
+                                       - 0.46991) * (x₁ * x₁)))) - 0.20701
+21          9.101e-03  4.639e-03  y = (-0.05641 / (0.95622 - (x₁ - x₀))) + ((-0.24991 / (x₁ ...
+                                      * ((x₁ * (x₀ - 0.12718)) - 0.4419))) - 0.20414)
+23          9.036e-03  3.609e-03  y = (-0.06851 / (0.94731 - (x₁ - x₀))) + ((-0.24973 / (((x...
+                                      ₁ * (x₀ - 0.12721)) - 0.44186) * (x₁ - x₀))) - 0.20444)
+25          7.990e-03  6.150e-02  y = (-0.11313 / (0.91633 - (x₁ - x₀))) + (((-0.18553 / ((x...
+                                      ₁ * x₀) - 0.61863)) / (((x₁ + -0.11303) * 0.93143) - x₀)) ...
+                                      - 0.22153)
+───────────────────────────────────────────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Press 'q' and then &lt;enter&gt; to stop execution early.
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Complexity  Loss       Score      Equation
+1           2.035e-01  0.000e+00  y = -0.0070507
+3           1.909e-01  3.189e-02  y = 0.63864 / x₁
+5           1.357e-01  1.705e-01  y = -0.59076 / (x₀ - x₁)
+7           2.778e-02  7.932e-01  y = -0.20667 / ((x₁ + -1.1858) - x₀)
+9           1.168e-02  4.333e-01  y = (-0.070507 / (0.94622 - (x₁ - x₀))) + -0.20238
+13          1.062e-02  2.373e-02  y = (-0.085704 / ((0.016837 / x₁) - (x₁ - (0.93069 + x₀)))...
+                                      ) + -0.20749
+15          9.622e-03  4.942e-02  y = (-0.11294 / (0.91371 + ((-0.0070755 / (x₀ + -0.31971))...
+                                       - (x₁ - x₀)))) - 0.21897
+17          9.405e-03  1.138e-02  y = (-0.11294 / (0.91371 - (x₁ - x₀))) + (((-0.11809 / x₁)...
+                                       / (-0.30834 + x₀)) - 0.21897)
+19          9.158e-03  1.333e-02  y = (-0.073248 / (0.94322 - (x₁ - x₀))) + ((-0.25118 / (x₁...
+                                       * (x₁ * (x₀ - 0.56259)))) - 0.20514)
+21          9.101e-03  3.125e-03  y = (-0.05641 / (0.95622 - (x₁ - x₀))) + ((-0.24991 / (x₁ ...
+                                      * ((x₁ * (x₀ - 0.12718)) - 0.4419))) - 0.20414)
+23          9.036e-03  3.609e-03  y = (-0.06851 / (0.94731 - (x₁ - x₀))) + ((-0.24973 / (((x...
+                                      ₁ * (x₀ - 0.12721)) - 0.44186) * (x₁ - x₀))) - 0.20444)
+25          7.990e-03  6.150e-02  y = (-0.11313 / (0.91633 - (x₁ - x₀))) + (((-0.18553 / ((x...
+                                      ₁ * x₀) - 0.61863)) / (((x₁ + -0.11303) * 0.93143) - x₀)) ...
+                                      - 0.22153)
+───────────────────────────────────────────────────────────────────────────────────────────────────
+  - outputs/20260217_134546_I5vzzY/hall_of_fame.csv</code></pre>
+</div>
+</div>
+<div id="b901caac" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(g)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>(-0.20237744*x0 + 0.20237744*x1 - 0.261999786885912)/(x0 - x1 + 0.94621605)</code></pre>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/qic-ibk\.github\.io\/qdisc\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/qic-ibk/qdisc/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

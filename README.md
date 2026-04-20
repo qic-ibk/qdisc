@@ -21,7 +21,8 @@ Discovery</em>
 <a href="https://qic-ibk.github.io/qdisc/">
 <img src="https://img.shields.io/badge/docs-online-blue">
 <a href="https://doi.org/10.5281/zenodo.19607943">
-<img src="https://zenodo.org/badge/1159286067.svg" alt="DOI"> </a>
+<img src="https://zenodo.org/badge/DOI/10.5281/zenodo.19607943.svg" alt="DOI">
+</a>
 
 </p>
 
@@ -65,8 +66,8 @@ We cover the two pillars of the `Qdisc` pipeline:
 Additional [example
 notebooks](https://qic-ibk.github.io/qdisc/examples/index_examples.html)
 are used to illustrate specific applications, as those covered in the
-[manuscript (TODO)](). For these examples, the quantum data are not
-provided:
+[manuscript](http://arxiv.org/abs/2604.16015). For these examples, the
+quantum data are not provided:
 
 1.  Measurement snapshots of Rydberg atom systems
     ([link](https://qic-ibk.github.io/qdisc/examples/qdisc_rydberg.html)).
@@ -101,7 +102,18 @@ Documentation can be found hosted on this GitHub
 
 ## Citing
 
-If you find the librairy usefull in your projects, please cite the
-accompanying [paper](paper):
+If you find the library useful in your projects, please cite the
+accompanying [paper](http://arxiv.org/abs/2604.16015):
 
-TODO add the citation
+**APA:** de Schoulepnikoff, P., Nautrup, H. P., Briegel, H. J., &
+Muñoz-Gil, G. (2026). Discovering quantum phenomena with Interpretable
+Machine Learning. arXiv preprint arXiv:2604.16015.
+
+**BibTeX:**
+
+    @article{de_schoulepnikoff2026discovering,
+      title={Discovering quantum phenomena with Interpretable Machine Learning},
+      author={de Schoulepnikoff, Paulin and Nautrup, Hendrik Poulsen and Briegel, Hans J and Mu{\~n}oz-Gil, Gorka},
+      journal={arXiv preprint arXiv:2604.16015},
+      year={2026}
+    }
